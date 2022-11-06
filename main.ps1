@@ -1,5 +1,5 @@
 function Users {
-    $selection = Read-Host "Have you created users.txt and admins.txt [y/n]: "
+    $selection = Read-Host "Have you created users.txt and admins.txt [y/n]"
     if ($selection -eq 'y')
     {
         $user_data = Get-Content .\users.txt
@@ -203,7 +203,7 @@ function Enable-Firewall {
 }
 
 function Remote-Desktop {
-    $choice = Read-Host "Is Remote Desktop Critical [y/n]: "
+    $choice = Read-Host "Is Remote Desktop Critical [y/n]"
     if($choice -eq "y"){
         Write-Output "Securing Remote Desktop"
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
@@ -754,20 +754,15 @@ while($var -le 5){
     Write-Host " | |  | | (_| | (__|   <  __/ |    | |_) | |_| | | |  __/ (_| | |_| | | (_) | |    _| |_| | | | ||  __/ | || | (_| |  __/ | | | (_|  __/"
     Write-Host " |_|  |_|\__,_|\___|_|\_\___|_|    |____/ \__,_|_|  \___|\__,_|\__,_|  \___/|_|   |_____|_| |_|\__\___|_|_|| |\__, |\___|_| |_|\___\___|"
     Write-Host "                                                                                                              __/ |                    "
-    Write-Host "                                                                                                             |___/                      "
-    Write-Host "1. User Config"
-    Write-Host "2. Firewall"
-    Write-Host "3. Windows Features"
-    Write-Host "4. Shared Drives"
-    Write-Host "5. Windows Defender"
-    Write-Host "6. User Rights"
-    Write-Host "7. Remote Desktop"
-    Write-Host "8. Local Policies"
-    Write-Host "9. Automatic Updates"
-    Write-Host "10. Registries"
+    Write-Host "                                                                                                             |___/"
+    Write-Host "1. User Config                      2. Firewall"
+    Write-Host "3. Windows Features                 4. Shared Drives"
+    Write-Host "5. Windows Defender                 6. User Rights"
+    Write-Host "7. Remote Desktop                   8. Local Policies"
+    Write-Host "9. Automatic Updates                10. Registries"
     Write-Host "11. Find Files"
-    Write-Host "99: Exit"
-    $Selection = Read-Host "Choose an Option: "
+    Write-Host "99. Exit"
+    $Selection = Read-Host "Choose an Option"
     switch($Selection) {
         "1"{
             Users
