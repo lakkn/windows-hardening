@@ -563,6 +563,63 @@ function Set-RandomRegistries {
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "CheckForSignaturesBeforeRunningScan" /t REG_DWORD /d 1 /f
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows Defender\Scan" /v "DisableHeuristics" /t REG_DWORD /d 0 /f
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments" /v "ScanWithAntiVirus" /t REG_DWORD /d 3 /f
+
+    # Detachable Storage
+    reg ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AllocateCDRoms /t REG_DWORD /d 1 /f
+    reg ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AllocateFloppies /t REG_DWORD /d 1 /f
+    reg ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v undockwithoutlogon /t REG_DWORD /d 0 /f
+
+	reg ADD "HKLM\SYSTEM\CurrentControlSet\Control\Session Manager\Memory Management" /v ClearPageFileAtShutdown /t REG_DWORD /d 1 /f
+	reg ADD "HKLM\SYSTEM\CurrentControlSet\Control\Print\Providers\LanMan Print Services\Servers" /v AddPrinterDrivers /t REG_DWORD /d 1 /f
+
+    # UAC
+    reg ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableLUA /t REG_DWORD /d 1 /f
+    Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "ConsentPromptBehaviorAdmin" -Type DWord -Value 5
+	Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" -Name "PromptOnSecureDesktop" -Type DWord -Value 1
+    reg ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v PromptOnSecureDesktop /t REG_DWORD /d 1 /f
+
+    # Installers
+    reg ADD HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v EnableInstallerDetection /t REG_DWORD /d 1 /f
+    reg ADD HKCU\SYSTEM\CurrentControlSet\Services\CDROM /v AutoRun /t REG_DWORD /d 1 /f
+    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoAutorun" /t REG_DWORD /d 1 /f
+    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v "NoDriveTypeAutoRun" /t REG_DWORD /d 255 /f
+
+    # Hidden Files
+    reg ADD HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v Hidden /t REG_DWORD /d 1 /f
+    reg ADD HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced /v ShowSuperHidden /t REG_DWORD /d 1 /f
+    reg ADD HKLM\SYSTEM\CurrentControlSet\Control\CrashControl /v CrashDumpEnabled /t REG_DWORD /d 0 /f
+
+    # Microsoft Office Suite
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\access\security" /v "vbawarnings" /t REG_DWORD /d 4 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\excel\security" /v "vbawarnings" /t REG_DWORD /d 4 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\excel\security" /v "blockcontentexecutionfrominternet" /t REG_DWORD /d 1 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\excel\security" /v "excelbypassencryptedmacroscan" /t REG_DWORD /d 0 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\ms project\security" /v "vbawarnings" /t REG_DWORD /d 4 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\ms project\security" /v "level" /t REG_DWORD /d 4 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\outlook\security" /v "level" /t REG_DWORD /d 4 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\powerpoint\security" /v "vbawarnings" /t REG_DWORD /d 4 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\powerpoint\security" /v "blockcontentexecutionfrominternet" /t REG_DWORD /d 1 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\publisher\security" /v "vbawarnings" /t REG_DWORD /d 4 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\visio\security" /v "vbawarnings" /t REG_DWORD /d 4 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\visio\security" /v "blockcontentexecutionfrominternet" /t REG_DWORD /d 1 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\word\security" /v "vbawarnings" /t REG_DWORD /d 4 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\word\security" /v "blockcontentexecutionfrominternet" /t REG_DWORD /d 1 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\16.0\word\security" /v "wordbypassencryptedmacroscan" /t REG_DWORD /d 0 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\office\common\security" /v "automationsecurity" /t REG_DWORD /d 3 /f
+
+    # Internet Explorer
+    reg ADD "HKCU\Software\Microsoft\Internet Explorer\PhishingFilter" /v EnabledV8 /t REG_DWORD /d 1 /f
+    reg ADD "HKCU\Software\Microsoft\Internet Explorer\PhishingFilter" /v EnabledV9 /t REG_DWORD /d 1 /f
+    reg ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v DisablePasswordCaching /t REG_DWORD /d 1 /f
+    reg add "HKEY_CURRENT_USER\Software\Policies\Microsoft\Internet Explorer\PhishingFilter" /v "EnabledV9" /t REG_DWORD /d 1 /f
+    reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Internet Explorer\PhishingFilter" /v "EnabledV9" /t REG_DWORD /d 1 /f
+
+    reg ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v WarnonBadCertRecving /t REG_DWORD /d 1 /f
+    reg ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v WarnOnPostRedirect /t REG_DWORD /d 1 /f
+    reg ADD "HKCU\Software\Microsoft\Internet Explorer\Main" /v DoNotTrack /t REG_DWORD /d 1 /f
+    reg ADD "HKCU\Software\Microsoft\Internet Explorer\Download" /v RunInvalidSignatures /t REG_DWORD /d 1 /f
+    reg ADD "HKCU\Software\Microsoft\Internet Explorer\Main\FeatureControl\FEATURE_LOCALMACHINE_LOCKDOWN\Settings" /v LOCALMACHINE_CD_UNLOCK /t REG_DWORD /d 1 /f
+    reg ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Internet Settings" /v WarnonZoneCrossing /t REG_DWORD /d 1 /f
 }
 
 function Configure-Services {
@@ -584,6 +641,7 @@ function Configure-Services {
 	$Selection = Read-Host $String
 	switch ($Selection) {
 	    "y"{
+	        Start-Service msftpsvc
             cmd.exe /c 'sc start msftpsvc'
             cmd.exe /c 'sc config msftpsvc start= auto'
             cmd.exe /c 'sc start Msftpsvc'
@@ -616,189 +674,252 @@ function Configure-Services {
 	$Selection = Read-Host $String
 	switch ($Selection) {
 	    "y"{
-            cmd.exe /c 'sc start termservice'
-            cmd.exe /c 'sc config termservice start= auto'
-            cmd.exe /c 'sc start Termservice'
-            cmd.exe /c 'sc config Termservice start= auto'
+	        Start-Service TermService
+	        Set-Service -Name TermService -StartupType Automatic
 	    }
 	    "n"{
-            cmd.exe /c 'sc stop termservice'
-	        cmd.exe /c 'sc config termservice start= disabled'
-            cmd.exe /c 'sc stop Termservice'
-	        cmd.exe /c 'sc config Termservice start= disabled'
+	        Stop-Service TermService
+	        Set-Service -Name TermService -StartupType Disabled
+            Stop-Service SessionEnv
+            Set-Service -Name SessionEnv -StartupType Disabled
+            Stop-Service RemoteRegistry
+            Set-Service -Name RemoteRegistry -StartupType Disabled
 		}
     }
-	cmd.exe /c 'sc stop snmptrap'
-	cmd.exe /c 'sc config snmptrap start= disabled'
-	cmd.exe /c 'sc stop ssdpsrv'
-	cmd.exe /c 'sc config ssdpsrv start= disabled'
-	cmd.exe /c 'sc stop sessionenv'
-	cmd.exe /c 'sc config sessionenv start= disabled'
-	cmd.exe /c 'sc stop remoteregistry'
-	cmd.exe /c 'sc config remoteregistry start= disabled'
-	cmd.exe /c 'sc stop Messenger'
-	cmd.exe /c 'sc config Messenger start= disabled'
-	cmd.exe /c 'sc stop upnphos'
-	cmd.exe /c 'sc config upnphos start= disabled'
+	Stop-Service SNMPTRAP
+	Set-Service -Name SNMPTRAP -StartupType Disabled
+	Stop-Service SSDPSRV
+	Set-Service -Name SSDPSRV -StartupType Disabled
+	try{
+        cmd.exe /c 'sc stop Messenger'
+        cmd.exe /c 'sc config Messenger start= disabled'
+	}catch{
+        Write-Host "Messenger doesn't exist"
+	}
+	Stop-Service upnphost
+	Set-Service -Name upnphost -StartupType Disabled
+	try{
 	cmd.exe /c 'sc stop WAS'
 	cmd.exe /c 'sc config WAS start= disabled'
-	cmd.exe /c 'sc stop RemoteAccess'
-	cmd.exe /c 'sc config RemoteAccess start= disabled'
+	}
+	#might be remote desktop stuff
+	Stop-Service RemoteAccess
+	Set-Service -Name RemoteAccess -StartupType Disabled
+	Stop-Service RasMan
+	Set-Service -Name RasMan -StartupType Disabled
+	Stop-Service RpcSs
+	Set-Service -Name RpcSs -StartupType Disabled
+	Stop-Service RasAuto
+	Set-Service -Name RasAuto -StartupType Disabled
+	Stop-Service UmRdpService
+	Set-Service -Name UmRdpService -StartupType Disabled
+    try{
 	cmd.exe /c 'sc stop mnmsrvc'
 	cmd.exe /c 'sc config mnmsrvc start= disabled'
+	}
+	try{
 	cmd.exe /c 'sc stop NetTcpPortSharing'
 	cmd.exe /c 'sc config NetTcpPortSharing start= disabled'
-	cmd.exe /c 'sc stop RasMan'
-	cmd.exe /c 'sc config RasMan start= disabled'
-	cmd.exe /c 'sc stop TabletInputService'
-	cmd.exe /c 'sc config TabletInputService start= disabled'
-	cmd.exe /c 'sc stop RpcSs'
-	cmd.exe /c 'sc config RpcSs start= disabled'
-	cmd.exe /c 'sc stop SENS'
-	cmd.exe /c 'sc config SENS start= disabled'
-	cmd.exe /c 'sc stop EventSystem'
-	cmd.exe /c 'sc config EventSystem start= disabled'
-	cmd.exe /c 'sc stop XblAuthManager'
-	cmd.exe /c 'sc config XblAuthManager start= disabled'
-	cmd.exe /c 'sc stop XblGameSave'
-	cmd.exe /c 'sc config XblGameSave start= disabled'
-	cmd.exe /c 'sc stop XboxGipSvc'
-	cmd.exe /c 'sc config XboxGipSvc start= disabled'
+	}
+	Stop-Service TabletInputService
+	Set-Service -Name TabletInputService -StartupType Disabled
+	Stop-Service SENS
+	Set-Service -Name SENS -StartupType Disabled
+	Stop-Service EventSystem
+	Set-Service -Name EventSystem -StartupType Disabled
+
+	Write-Output "Disabling XBox services"
+	Stop-Service XblAuthManager
+	Set-Service -Name XblAuthManager -StartupType Disabled
+	Stop-Service XblGameSave
+	Set-Service -Name XblGameSave -StartupType Disabled
+	Stop-Service XboxGipSvc
+	Set-Service -Name XboxGipSvc -StartupType Disabled
+	Stop-Service XboxNetApiSvc
+	Set-Service -Name XboxNetApiSvc -StartupType Disabled
+	try{
 	cmd.exe /c 'sc stop xboxgip'
 	cmd.exe /c 'sc config xboxgip start= disabled'
+	}
+	try{
 	cmd.exe /c 'sc stop xbgm'
 	cmd.exe /c 'sc config xbgm start= disabled'
-	cmd.exe /c 'sc stop SysMain'
-	cmd.exe /c 'sc config SysMain start= disabled'
-    cmd.exe /c 'sc stop seclogon'
-    cmd.exe /c 'sc config seclogon start= disabled'
-    cmd.exe /c 'sc stop TapiSrv'
-    cmd.exe /c 'sc config TapiSrv start= disabled'
-    cmd.exe /c 'sc stop p2pimsvc'
-    cmd.exe /c 'sc config p2pimsvc start= disabled'
+	}
+
+	Stop-Service SysMain
+	Set-Service -Name SysMain -StartupType Disabled
+	Stop-Service seclogon
+	Set-Service -Name seclogon -StartupType Disabled
+	Stop-Service TapiSrv
+	Set-Service -Name TapiSrv -StartupType Disabled
+	Stop-Service p2pimsvc
+	Set-Service -Name p2pimsvc -StartupType Disabled
+	try{
     cmd.exe /c 'sc stop simptcp'
     cmd.exe /c 'sc config simptcp start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop fax'
     cmd.exe /c 'sc config fax start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop iprip'
     cmd.exe /c 'sc config iprip start= disabled'
-    cmd.exe /c 'sc stop RasAuto'
-    cmd.exe /c 'sc config RasAuto start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop W3svc'
     cmd.exe /c 'sc config W3svc start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop Dfs'
     cmd.exe /c 'sc config Dfs start= disabled'
-    cmd.exe /c 'sc stop TrkWks'
-    cmd.exe /c 'sc config TrkWks start= disabled'
-    cmd.exe /c 'sc stop MSDTC'
-    cmd.exe /c 'sc config MSDTC start= disabled'
+    }
+	Stop-Service TrkWks
+	Set-Service -Name TrkWks -StartupType Disabled
+	Stop-Service MSDTC
+	Set-Service -Name MSDTC -StartupType Disabled
+    try{
     cmd.exe /c 'sc stop ERSvc'
     cmd.exe /c 'sc config ERSvc start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop NtFrs'
     cmd.exe /c 'sc config NtFrs start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop Iisadmin'
     cmd.exe /c 'sc config Iisadmin start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop IsmServ'
     cmd.exe /c 'sc config IsmServ start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop WmdmPmSN'
     cmd.exe /c 'sc config WmdmPmSN start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop helpsvc'
     cmd.exe /c 'sc config helpsvc start= disabled'
-    cmd.exe /c 'sc stop Spooler'
-    cmd.exe /c 'sc config Spooler start= disabled'
+    }
+	Stop-Service Spooler
+	Set-Service -Name Spooler -StartupType Disabled
+    try{
     cmd.exe /c 'sc stop RDSessMgr'
     cmd.exe /c 'sc config RDSessMgr start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop RSoPProv'
     cmd.exe /c 'sc config RSoPProv start= disabled'
-    cmd.exe /c 'sc stop SCardSvr'
-    cmd.exe /c 'sc config SCardSvr start= disabled'
-    cmd.exe /c 'sc stop lanmanserver'
-    cmd.exe /c 'sc config lanmanserver start= disabled'
+    }
+	Stop-Service SCardSvr
+	Set-Service -Name SCardSvr -StartupType Disabled
+	Stop-Service LanmanServer
+	Set-Service -Name LanmanServer -StartupType Disabled
+    try{
     cmd.exe /c 'sc stop Sacsvr'
     cmd.exe /c 'sc config Sacsvr start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop uploadmgr'
     cmd.exe /c 'sc config uploadmgr start= disabled'
-    cmd.exe /c 'sc stop VDS'
-    cmd.exe /c 'sc config VDS start= disabled'
-    cmd.exe /c 'sc stop VSS'
-    cmd.exe /c 'sc config VSS start= disabled'
+    }
+	Stop-Service vds
+	Set-Service -Name vds -StartupType Disabled
+	Stop-Service VSS
+	Set-Service -Name VSS -StartupType Disabled
+    try{
     cmd.exe /c 'sc stop WINS'
     cmd.exe /c 'sc config WINS start= disabled'
-    cmd.exe /c 'sc stop CscService'
-    cmd.exe /c 'sc config CscService start= disabled'
-    cmd.exe /c 'sc stop hidserv'
-    cmd.exe /c 'sc config hidserv start= disabled'
+    }
+	Stop-Service CscService
+	Set-Service -Name CscService -StartupType Disabled
+	Stop-Service hidserv
+	Set-Service -Name hidserv -StartupType Disabled
+    try{
     cmd.exe /c 'sc stop IPBusEnum'
     cmd.exe /c 'sc config IPBusEnum start= disabled'
-    cmd.exe /c 'sc stop PolicyAgent'
-    cmd.exe /c 'sc config PolicyAgent start= disabled'
-    #cmd.exe /c 'sc stop SCPolicySvc'
-    #cmd.exe /c 'sc config SCPolicySvc start= disabled'
-    cmd.exe /c 'sc stop SharedAccess'
-    cmd.exe /c 'sc config SharedAccess start= disabled'
-    cmd.exe /c 'sc stop SSDPSRV'
-    cmd.exe /c 'sc config SSDPSRV start= disabled'
-    cmd.exe /c 'sc stop Themes'
-    cmd.exe /c 'sc config Themes start= disabled'
-    cmd.exe /c 'sc stop upnphost'
-    cmd.exe /c 'sc config upnphost start= disabled'
+    }
+	Stop-Service PolicyAgent
+	Set-Service -Name PolicyAgent -StartupType Disabled
+	Stop-Service SharedAccess
+	Set-Service -Name SharedAccess -StartupType Disabled
+	Stop-Service SSDPSRV
+	Set-Service -Name SSDPSRV -StartupType Disabled
+	Stop-Service Themes
+	Set-Service -Name Themes -StartupType Disabled
+    try{
     cmd.exe /c 'sc stop nfssvc'
     cmd.exe /c 'sc config nfssvc start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop nfsclnt'
     cmd.exe /c 'sc config nfsclnt start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop MSSQLServerADHelper'
     cmd.exe /c 'sc config MSSQLServerADHelper start= disabled'
-    cmd.exe /c 'sc stop SharedAccess'
-    cmd.exe /c 'sc config SharedAccess start= disabled'
-    cmd.exe /c 'sc stop UmRdpService'
-    cmd.exe /c 'sc config UmRdpService start= disabled'
-    cmd.exe /c 'sc stop SessionEnv'
-    cmd.exe /c 'sc config SessionEnv start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop Server'
     cmd.exe /c 'sc config Server start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop TeamViewer'
     cmd.exe /c 'sc config TeamViewer start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop TeamViewer7'
-    cmd.exe /c 'sc config start= disabled'
+    cmd.exe /c 'sc config TeamViewer7 start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop HomeGroupListener'
     cmd.exe /c 'sc config HomeGroupListener start= disabled'
+    }
+    try{
     cmd.exe /c 'sc stop HomeGroupProvider'
     cmd.exe /c 'sc config HomeGroupProvider start= disabled'
-    cmd.exe /c 'sc stop AxInstSV'
-    cmd.exe /c 'sc config AXInstSV start= disabled'
-    cmd.exe /c 'sc stop Netlogon'
-    cmd.exe /c 'sc config Netlogon start= disabled'
-    cmd.exe /c 'sc stop lltdsvc'
-    cmd.exe /c 'sc config lltdsvc start= disabled'
-    cmd.exe /c 'sc stop iphlpsvc'
-    cmd.exe /c 'sc config iphlpsvc start= disabled'
+    }
+	Stop-Service AxInstSV
+	Set-Service -Name AxInstSV -StartupType Disabled
+	Stop-Service Netlogon
+	Set-Service -Name Netlogon -StartupType Disabled
+	Stop-Service lltdsvc
+	Set-Service -Name lltdsvc -StartupType Disabled
+	Stop-Service iphlpsvc
+	Set-Service -Name iphlpsvc -StartupType Disabled
+    try{
     cmd.exe /c 'sc stop AdobeARMservice'
     cmd.exe /c 'sc config AdobeARMservice start= disabled'
+    }
 
     #goodservices
-    Write-Output "Enabling Good Servicess"
-    cmd.exe /c 'sc start wuauserv'
-    cmd.exe /c 'sc config wuauserv start= auto'
-    cmd.exe /c 'sc start EventLog'
-    cmd.exe /c 'sc config EventLog start= auto'
-    cmd.exe /c 'sc start MpsSvc'
-    cmd.exe /c 'sc config MpsSvc start= auto'
-    cmd.exe /c 'sc start WinDefend'
-    cmd.exe /c 'sc config WinDefend start= auto'
-    cmd.exe /c 'sc start WdNisSvc'
-    cmd.exe /c 'sc config WdNisSvc start= auto'
-    cmd.exe /c 'sc start Sense'
-    cmd.exe /c 'sc config Sense start= auto'
-    cmd.exe /c 'sc start Schedule'
-    cmd.exe /c 'sc config Schedule start= auto'
-    cmd.exe /c 'sc start SCardSvr'
-    cmd.exe /c 'sc config SCardSvr start= auto'
-    cmd.exe /c 'sc start ScDeviceEnum'
-    cmd.exe /c 'sc config ScDeviceEnum start= auto'
-    cmd.exe /c 'sc start SCPolicySvc'
-    cmd.exe /c 'sc config SCPolicySvc start= auto'
-    cmd.exe /c 'sc start wscsvc'
-    cmd.exe /c 'sc config wscsvc start= auto'
+    Write-Output "Enabling Good Services"
+
+    Start-Service wuauserv
+    Set-Service -Name wuauserv -StartupType Automatic
+    Start-Service EventLog
+    Set-Service -Name EventLog -StartupType Automatic
+    Start-Service mpssvc
+    Set-Service -Name mpssvc -StartupType Automatic
+    Start-Service WinDefend
+    Set-Service -Name WinDefend -StartupType Automatic
+    Start-Service WdNisSvc
+    Set-Service -Name WdNisSvc -StartupType Automatic
+    Start-Service Sense
+    Set-Service -Name Sense -StartupType Automatic
+    Start-Service Schedule
+    Set-Service -Name Schedule -StartupType Automatic
+    Start-Service SCardSvr
+    Set-Service -Name SCardSvr -StartupType Automatic
+    Start-Service ScDeviceEnum
+    Set-Service -Name ScDeviceEnum -StartupType Automatic
+    Start-Service SCPolicySvc
+    Set-Service -Name SCPolicySvc -StartupType Automatic
+    Start-Service wscsvc
+    Set-Service -Name wscsvc -StartupType Automatic
+
+    Write-Output "Services Configured"
 }
 
 function Find-Files{

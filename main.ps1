@@ -309,6 +309,13 @@ function Disable-WindowsFeatures {
         dism /online /disable-feature /featurename:"SMB1Protocol"
         Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
     }
+    $confirmation = Read-Host "Disable FTP? [y/n]"
+    if ($confirmation -eq "y") {
+        dism /online /disable-feature /featurename:IIS-FTPServer
+        dism /online /disable-feature /featurename:IIS-FTPSvc
+        dism /online /disable-feature /featurename:IIS-FTPExtensibility
+        dism /online /disable-feature /featurename:TFTP
+    }
 }
 
 function UserRights {
@@ -745,6 +752,317 @@ function Registries {
     reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Attachments" /v "ScanWithAntiVirus" /t REG_DWORD /d 3 /f
 }
 
+function Configure-Services {
+    Write-Output "Disabling Bad Services"
+
+    $String = Write-Output "Is telnet necessary [y/n]?"
+	$Selection = Read-Host $String
+	switch ($Selection) {
+	    "y"{
+            cmd.exe /c 'sc start tlntsvr'
+            cmd.exe /c 'sc config tlntvr start= auto'
+	    }
+	    "n"{
+            cmd.exe /c 'sc stop tlntsvr'
+	        cmd.exe /c 'sc config tlntsvr start= disabled'
+		}
+    }
+    $String = Write-Output "Is FTP necessary [y/n]?"
+	$Selection = Read-Host $String
+	switch ($Selection) {
+	    "y"{
+	        Start-Service msftpsvc
+            cmd.exe /c 'sc start msftpsvc'
+            cmd.exe /c 'sc config msftpsvc start= auto'
+            cmd.exe /c 'sc start Msftpsvc'
+            cmd.exe /c 'sc config Msftpsvc start= auto'
+            cmd.exe /c 'sc start ftpsvc'
+            cmd.exe /c 'sc config ftpsvc start= auto'
+	    }
+	    "n"{
+            cmd.exe /c 'sc stop msftpsvc'
+	        cmd.exe /c 'sc config msftpsvc start= disabled'
+            cmd.exe /c 'sc stop Msftpsvc'
+            cmd.exe /c 'sc config Msftpsvc start= disabled'
+            cmd.exe /c 'sc stop ftpsvc'
+            cmd.exe /c 'sc config ftpsvc start= disabled'
+		}
+    }
+    $String = Write-Output "Is SMTP necessary [y/n]?"
+	$Selection = Read-Host $String
+	switch ($Selection) {
+	    "y"{
+            cmd.exe /c 'sc start Smtpsvc'
+            cmd.exe /c 'sc config Smtpsvc start= auto'
+	    }
+	    "n"{
+            cmd.exe /c 'sc stop Smtpsvc'
+	        cmd.exe /c 'sc config Smtpsvc start= disabled'
+		}
+    }
+    $String = Write-Output "Is Remote Desktop necessary [y/n]?"
+	$Selection = Read-Host $String
+	switch ($Selection) {
+	    "y"{
+	        Start-Service TermService
+	        Set-Service -Name TermService -StartupType Automatic
+	    }
+	    "n"{
+	        Stop-Service TermService
+	        Set-Service -Name TermService -StartupType Disabled
+            Stop-Service SessionEnv
+            Set-Service -Name SessionEnv -StartupType Disabled
+            Stop-Service RemoteRegistry
+            Set-Service -Name RemoteRegistry -StartupType Disabled
+		}
+    }
+	Stop-Service SNMPTRAP
+	Set-Service -Name SNMPTRAP -StartupType Disabled
+	Stop-Service SSDPSRV
+	Set-Service -Name SSDPSRV -StartupType Disabled
+	try{
+        cmd.exe /c 'sc stop Messenger'
+        cmd.exe /c 'sc config Messenger start= disabled'
+	}catch{
+        Write-Host "Messenger doesn't exist"
+	}
+	Stop-Service upnphost
+	Set-Service -Name upnphost -StartupType Disabled
+	try{
+	cmd.exe /c 'sc stop WAS'
+	cmd.exe /c 'sc config WAS start= disabled'
+	}
+	#might be remote desktop stuff
+	Stop-Service RemoteAccess
+	Set-Service -Name RemoteAccess -StartupType Disabled
+	Stop-Service RasMan
+	Set-Service -Name RasMan -StartupType Disabled
+	Stop-Service RpcSs
+	Set-Service -Name RpcSs -StartupType Disabled
+	Stop-Service RasAuto
+	Set-Service -Name RasAuto -StartupType Disabled
+	Stop-Service UmRdpService
+	Set-Service -Name UmRdpService -StartupType Disabled
+    try{
+	cmd.exe /c 'sc stop mnmsrvc'
+	cmd.exe /c 'sc config mnmsrvc start= disabled'
+	}
+	try{
+	cmd.exe /c 'sc stop NetTcpPortSharing'
+	cmd.exe /c 'sc config NetTcpPortSharing start= disabled'
+	}
+	Stop-Service TabletInputService
+	Set-Service -Name TabletInputService -StartupType Disabled
+	Stop-Service SENS
+	Set-Service -Name SENS -StartupType Disabled
+	Stop-Service EventSystem
+	Set-Service -Name EventSystem -StartupType Disabled
+
+	Write-Output "Disabling XBox services"
+	Stop-Service XblAuthManager
+	Set-Service -Name XblAuthManager -StartupType Disabled
+	Stop-Service XblGameSave
+	Set-Service -Name XblGameSave -StartupType Disabled
+	Stop-Service XboxGipSvc
+	Set-Service -Name XboxGipSvc -StartupType Disabled
+	Stop-Service XboxNetApiSvc
+	Set-Service -Name XboxNetApiSvc -StartupType Disabled
+	try{
+	cmd.exe /c 'sc stop xboxgip'
+	cmd.exe /c 'sc config xboxgip start= disabled'
+	}
+	try{
+	cmd.exe /c 'sc stop xbgm'
+	cmd.exe /c 'sc config xbgm start= disabled'
+	}
+
+	Stop-Service SysMain
+	Set-Service -Name SysMain -StartupType Disabled
+	Stop-Service seclogon
+	Set-Service -Name seclogon -StartupType Disabled
+	Stop-Service TapiSrv
+	Set-Service -Name TapiSrv -StartupType Disabled
+	Stop-Service p2pimsvc
+	Set-Service -Name p2pimsvc -StartupType Disabled
+	try{
+    cmd.exe /c 'sc stop simptcp'
+    cmd.exe /c 'sc config simptcp start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop fax'
+    cmd.exe /c 'sc config fax start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop iprip'
+    cmd.exe /c 'sc config iprip start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop W3svc'
+    cmd.exe /c 'sc config W3svc start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop Dfs'
+    cmd.exe /c 'sc config Dfs start= disabled'
+    }
+	Stop-Service TrkWks
+	Set-Service -Name TrkWks -StartupType Disabled
+	Stop-Service MSDTC
+	Set-Service -Name MSDTC -StartupType Disabled
+    try{
+    cmd.exe /c 'sc stop ERSvc'
+    cmd.exe /c 'sc config ERSvc start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop NtFrs'
+    cmd.exe /c 'sc config NtFrs start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop Iisadmin'
+    cmd.exe /c 'sc config Iisadmin start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop IsmServ'
+    cmd.exe /c 'sc config IsmServ start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop WmdmPmSN'
+    cmd.exe /c 'sc config WmdmPmSN start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop helpsvc'
+    cmd.exe /c 'sc config helpsvc start= disabled'
+    }
+	Stop-Service Spooler
+	Set-Service -Name Spooler -StartupType Disabled
+    try{
+    cmd.exe /c 'sc stop RDSessMgr'
+    cmd.exe /c 'sc config RDSessMgr start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop RSoPProv'
+    cmd.exe /c 'sc config RSoPProv start= disabled'
+    }
+	Stop-Service SCardSvr
+	Set-Service -Name SCardSvr -StartupType Disabled
+	Stop-Service LanmanServer
+	Set-Service -Name LanmanServer -StartupType Disabled
+    try{
+    cmd.exe /c 'sc stop Sacsvr'
+    cmd.exe /c 'sc config Sacsvr start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop uploadmgr'
+    cmd.exe /c 'sc config uploadmgr start= disabled'
+    }
+	Stop-Service vds
+	Set-Service -Name vds -StartupType Disabled
+	Stop-Service VSS
+	Set-Service -Name VSS -StartupType Disabled
+    try{
+    cmd.exe /c 'sc stop WINS'
+    cmd.exe /c 'sc config WINS start= disabled'
+    }
+	Stop-Service CscService
+	Set-Service -Name CscService -StartupType Disabled
+	Stop-Service hidserv
+	Set-Service -Name hidserv -StartupType Disabled
+    try{
+    cmd.exe /c 'sc stop IPBusEnum'
+    cmd.exe /c 'sc config IPBusEnum start= disabled'
+    }
+	Stop-Service PolicyAgent
+	Set-Service -Name PolicyAgent -StartupType Disabled
+	Stop-Service SharedAccess
+	Set-Service -Name SharedAccess -StartupType Disabled
+	Stop-Service SSDPSRV
+	Set-Service -Name SSDPSRV -StartupType Disabled
+	Stop-Service Themes
+	Set-Service -Name Themes -StartupType Disabled
+    try{
+    cmd.exe /c 'sc stop nfssvc'
+    cmd.exe /c 'sc config nfssvc start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop nfsclnt'
+    cmd.exe /c 'sc config nfsclnt start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop MSSQLServerADHelper'
+    cmd.exe /c 'sc config MSSQLServerADHelper start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop Server'
+    cmd.exe /c 'sc config Server start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop TeamViewer'
+    cmd.exe /c 'sc config TeamViewer start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop TeamViewer7'
+    cmd.exe /c 'sc config TeamViewer7 start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop HomeGroupListener'
+    cmd.exe /c 'sc config HomeGroupListener start= disabled'
+    }
+    try{
+    cmd.exe /c 'sc stop HomeGroupProvider'
+    cmd.exe /c 'sc config HomeGroupProvider start= disabled'
+    }
+	Stop-Service AxInstSV
+	Set-Service -Name AxInstSV -StartupType Disabled
+	Stop-Service Netlogon
+	Set-Service -Name Netlogon -StartupType Disabled
+	Stop-Service lltdsvc
+	Set-Service -Name lltdsvc -StartupType Disabled
+	Stop-Service iphlpsvc
+	Set-Service -Name iphlpsvc -StartupType Disabled
+    try{
+    cmd.exe /c 'sc stop AdobeARMservice'
+    cmd.exe /c 'sc config AdobeARMservice start= disabled'
+    }
+
+    #goodservices
+    Write-Output "Enabling Good Services"
+
+    Start-Service wuauserv
+    Set-Service -Name wuauserv -StartupType Automatic
+    Start-Service EventLog
+    Set-Service -Name EventLog -StartupType Automatic
+    Start-Service mpssvc
+    Set-Service -Name mpssvc -StartupType Automatic
+    Start-Service WinDefend
+    Set-Service -Name WinDefend -StartupType Automatic
+    Start-Service WdNisSvc
+    Set-Service -Name WdNisSvc -StartupType Automatic
+    Start-Service Sense
+    Set-Service -Name Sense -StartupType Automatic
+    Start-Service Schedule
+    Set-Service -Name Schedule -StartupType Automatic
+    Start-Service SCardSvr
+    Set-Service -Name SCardSvr -StartupType Automatic
+    Start-Service ScDeviceEnum
+    Set-Service -Name ScDeviceEnum -StartupType Automatic
+    Start-Service SCPolicySvc
+    Set-Service -Name SCPolicySvc -StartupType Automatic
+    Start-Service wscsvc
+    Set-Service -Name wscsvc -StartupType Automatic
+
+    Write-Output "Services Configured"
+}
+
+function Clear-DNS {
+    Write-Output "Clear DNS Cache"
+    ipconfig /flushdns
+}
+
+function Firefox-Config {
+    copy .\resources\mozilla.cfg "C:\Program Files (x86)\Mozilla Firefox\"
+    copy .\resources\mozilla.cfg "C:\Program Files\Mozilla Firefox\"
+}
+
+
 $var = 1
 while($var -le 5){
     Write-Host "  _    _            _               ____                                      __   _____       _       _ _"
@@ -753,15 +1071,16 @@ while($var -le 5){
     Write-Host " |  __  |/ _, |/ __| |/ / _ \  __| |  _ <| | | |  __/ _ \/ _, | | | |  / _ \|  _|   | | | '_ \| __/ _ \ | || |/ _` |/ _ \ '_ \ / __/ _ \"
     Write-Host " | |  | | (_| | (__|   <  __/ |    | |_) | |_| | | |  __/ (_| | |_| | | (_) | |    _| |_| | | | ||  __/ | || | (_| |  __/ | | | (_|  __/"
     Write-Host " |_|  |_|\__,_|\___|_|\_\___|_|    |____/ \__,_|_|  \___|\__,_|\__,_|  \___/|_|   |_____|_| |_|\__\___|_|_|| |\__, |\___|_| |_|\___\___|"
-    Write-Host "                                                                                                              __/ |                    "
+    Write-Host "                                                                                                             __/ |                    "
     Write-Host "                                                                                                             |___/"
     Write-Host "1. User Config                      2. Firewall"
     Write-Host "3. Windows Features                 4. Shared Drives"
     Write-Host "5. Windows Defender                 6. User Rights"
     Write-Host "7. Remote Desktop                   8. Local Policies"
     Write-Host "9. Automatic Updates                10. Registries"
-    Write-Host "11. Find Files"
-    Write-Host "99. Exit"
+    Write-Host "11. Find Files                      12. Enable UAC"
+    Write-Host "13. Configure Services              14. Firefox Config"
+    Write-Host "98. Other                           99. Exit"
     $Selection = Read-Host "Choose an Option"
     switch($Selection) {
         "1"{
@@ -797,8 +1116,23 @@ while($var -le 5){
         "11"{
             Files
         }
+        "12"{
+            Write-Host "Search Bar - Type 'UAC' - Set to highest level"
+        }
+        "13"{
+            Configure-Services
+        }
+        "14"{
+            Firefox-Config
+        }
+        "98"{
+            Clear-DNS
+        }
         "99"{
             $var = 6
         }
+    }
+    if($var -lt 5){
+        Read-Host "Enter to Continue"
     }
 }
