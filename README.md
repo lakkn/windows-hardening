@@ -42,3 +42,6 @@ yuva
 ```
 ## Versions
 #### `windows10.ps1` is the older version of `main.ps1`
+
+## Credit
+#### firefox configuration from [https://github.com/pyllyukko/user.js]
