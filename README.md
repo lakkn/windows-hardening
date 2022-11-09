@@ -46,3 +46,5 @@ yuva
 ## Credit
 #### firefox configuration from [https://github.com/pyllyukko/user.js]
 #### services list from [https://ss64.com/nt/syntax-services.html]
+#### windows details from [https://learn.microsoft.com/en-us/]
+#### servicing tools from [https://live.sysinternals.com/]
