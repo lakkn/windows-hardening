@@ -1,5 +1,5 @@
 # HBI CyberPatriot Scripts and Checklists for Windows
-### These scripts were made by Lakshay Kansal in *Hackers Bureau of Intelligence* for CyberPatriot *XII - XV*
+### These scripts were made by Lakshay Kansal for team *Hackers Bureau of Intelligence* in CyberPatriot *XII - XV*
 
 ## Introduction
 It is against CyberPatriot rules to utilize these scripts from CyberPatriot *XII - XV* but I encourage you to mess around with them in practice VMs
@@ -15,7 +15,7 @@ Take a look at the checklists to gain a **good** idea of how your thought procce
 ## Users
 ### this is still in beta so I am unsure if it will work to full capacity
 
-For users place Authorized Users in users.txt and admins in admins.txt like so
+For users place Authorized Users in users.txt and Admins in admins.txt like so
 
 #### users.txt
 ```
