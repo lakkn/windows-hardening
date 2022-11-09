@@ -1052,9 +1052,17 @@ function Configure-Services {
     Write-Output "Services Configured"
 }
 
-function Clear-DNS {
+function Other {
     Write-Output "Clear DNS Cache"
     ipconfig /flushdns
+    Write-Output "Empty Recycling Bins"
+    Clear-RecycleBin -DriveLetter C
+    Write-Output "Setting Power Settings"
+    powercfg -SETDCVALUEINDEX SCHEME_BALANCED SUB_NONE CONSOLELOCK 1
+    powercfg -SETDCVALUEINDEX SCHEME_MIN SUB_NONE CONSOLELOCK 1
+    powercfg -SETDCVALUEINDEX SCHEME_MAX SUB_NONE CONSOLELOCK 1
+    Write-Output "Getting Hosts File"
+    copy C:\Windows\System32\drivers\etc\hosts .\hosts
 }
 
 function Firefox-Config {
@@ -1126,7 +1134,7 @@ while($var -le 5){
             Firefox-Config
         }
         "98"{
-            Clear-DNS
+            Other
         }
         "99"{
             $var = 6
