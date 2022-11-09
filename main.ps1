@@ -2,8 +2,8 @@ function Users {
     $selection = Read-Host "Have you created users.txt and admins.txt [y/n]"
     if ($selection -eq 'y')
     {
-        $user_data = Get-Content .\users.txt
-        $admin_data = Get-Content .\admins.txt
+        $user_data = Get-Content .\users\users.txt
+        $admin_data = Get-Content .\users\admins.txt
         $all_users = Get-WMIObject Win32_UserAccount -filter 'LocalAccount=TRUE' | select-object -ExpandProperty Name
         Write-Output $all_users
         for($i = 0; $i -lt $user_data.Length; $i++)
