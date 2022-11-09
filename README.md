@@ -8,3 +8,33 @@ You will learn a lot more about PS1 and Command Prompt. Also these scripts can b
 There is no **gain** in just building scripts and running them because it will **never** give you all the points you need. You need a base understanding of the vulncats and how to approach all of them. If you are just looking for pure statistics, this scripts can consistently give you at least 50 points give or take depending on the round.
 
 Take a look at the checklists to gain a **good** idea of how your thought proccess should be during competition.
+
+
+## Users
+### this is still in beta so I am unsure if it will work to full capacity
+
+For users place Authorized Users in users.txt and admins in admins.txt like so
+
+#### users.txt
+```
+one
+two
+three
+four
+five
+six
+seven
+eight
+nine
+ten
+eleven
+```
+#### admins.txt
+```
+lakkn
+randomness
+justinator
+mountaindu
+kloset
+yuva
+```
