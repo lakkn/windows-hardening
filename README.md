@@ -40,3 +40,5 @@ mountaindu
 kloset
 yuva
 ```
+## Versions
+#### `windows10.ps1` is the older version of `main.ps1`
