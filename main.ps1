@@ -867,7 +867,7 @@ function Configure-Services {
 
         if (($service.Mode -eq 'Disabled') -and -not ((Get-Service | where name -eq $service.Process).Status -eq 'Stopped')) {
             try {
-                Stop-Service -Name $service.Process -ErrorAction Stop | Out-Null
+                Stop-Service -Name $service.Process -Force -ErrorAction Stop | Out-Null
                 Write-Host "$($service.Name) is now stopped." -ForegroundColor green
             } catch {
                 Write-Host "Failed to stop the $($service.Name) service." -ForegroundColor red
