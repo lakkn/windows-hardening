@@ -2,8 +2,8 @@ function Users {
     $selection = Read-Host "Have you created users.txt and admins.txt [y/n]"
     if ($selection -eq 'y')
     {
-        $user_data = Get-Content .\users\users.txt
-        $admin_data = Get-Content .\users\admins.txt
+        $user_data = Get-Content "$($PSScriptRoot)users\users.txt"
+        $admin_data = Get-Content "$($PSScriptRoot)users\admins.txt"
         $all_users = Get-WMIObject Win32_UserAccount -filter 'LocalAccount=TRUE' | select-object -ExpandProperty Name
         Write-Output $all_users
         for($i = 0; $i -lt $user_data.Length; $i++)
@@ -73,19 +73,19 @@ function Files {
     foreach($ext in $extensions)
     {
         Write-host "Checking for .$ext files"
-        if(Test-path ".\files_output\$ext.txt"){
-            Clear-content ".\files_output\$ext.txt"
+        if(Test-path "$($PSScriptRoot)files_output\$ext.txt"){
+            Clear-content "$($PSScriptRoot)files_output\$ext.txt"
         }
-        C:\Windows\System32\cmd.exe /C dir C:\*.$ext /s /b | Out-File ".\files_output\$ext.txt"
+        C:\Windows\System32\cmd.exe /C dir C:\*.$ext /s /b | Out-File "$($PSScriptRoot)files_output\$ext.txt"
     }
     Write-host "Finished searching by extension"
     Write-host "Checking for $tools"
     foreach($tool in $tools){
         Write-host "Checking for $tool"
-        if(Test-path ".\files_output\$tool.txt"){
-            Clear-content ".\files_output\$tool.txt"
+        if(Test-path "$($PSScriptRoot)files_output\$tool.txt"){
+            Clear-content "$($PSScriptRoot)files_output\$tool.txt"
         }
-        C:\Windows\System32\cmd.exe /C dir C:\*$tool* /s /b | Out-File ".\files_output\$tool.txt"
+        C:\Windows\System32\cmd.exe /C dir C:\*$tool* /s /b | Out-File "$($PSScriptRoot)files_output\$tool.txt"
     }
     Write-host "Finished searching for tools"
 }
@@ -262,7 +262,7 @@ function Remote-Desktop {
 function Disable-WindowsFeatures {
     Write-Host("===============")
     Write-Host("Installing Dism")
-    Copy-Item ".\resources\Dism.exe" -Destination "C:\Windows\System32"
+    Copy-Item "$($PSScriptRoot)resources\Dism.exe" -Destination "C:\Windows\System32"
     Write-Host "=============================="
     Write-Host "--- Disabling IIS Services ---" -ForegroundColor Blue -BackgroundColor White
 
@@ -329,7 +329,7 @@ function Disable-WindowsFeatures {
 function UserRights {
     Write-Host("===================")
     Write-Host("Installing NTRights")
-    Copy-Item ".\resources\ntrights.exe" -Destination "C:\Windows\System32"
+    Copy-Item "$($PSScriptRoot)resources\ntrights.exe" -Destination "C:\Windows\System32"
     Write-Host("===================")
     Write-Host("Setting User Rights")
     $remove = @("Backup Operators","Everyone","Power Users","Users","NETWORK SERVICE","LOCAL SERVICE","Remote Desktop User","ANONOYMOUS LOGON","Guest","Performance Log Users")
@@ -833,7 +833,7 @@ function Registries {
 function Configure-Services {
     Write-Host("=================================")
     Write-Host("Configuring Good and Bad Services")
-    $services = Import-Csv -Path ".\resources\services.csv"
+    $services = Import-Csv -Path "$($PSScriptRoot)resources\services.csv"
     foreach ($service in $services) {
 
         if ((Get-Service | where name -eq $service.Process) -eq $null) {
@@ -893,12 +893,12 @@ function Other {
     powercfg -SETDCVALUEINDEX SCHEME_MAX SUB_NONE CONSOLELOCK 1
     Write-Ouput "==================="
     Write-Output "Getting Hosts File"
-    Copy-Item "C:\Windows\System32\drivers\etc\hosts" -Destination ".\hosts"
+    Copy-Item "C:\Windows\System32\drivers\etc\hosts" -Destination "$($PSScriptRoot)hosts"
 }
 
 function Firefox-Config {
-    Copy-Item ".\resources\mozilla.cfg" -Destination "C:\Program Files (x86)\Mozilla Firefox\"
-    Copy-Item ".\resources\mozilla.cfg" -Destination "C:\Program Files\Mozilla Firefox\"
+    Copy-Item "$($PSScriptRoot)resources\mozilla.cfg" -Destination "C:\Program Files (x86)\Mozilla Firefox\"
+    Copy-Item "$($PSScriptRoot)resources\mozilla.cfg" -Destination "C:\Program Files\Mozilla Firefox\"
 }
 
 function System-Integrity {
@@ -910,7 +910,92 @@ function System-Integrity {
 function Security-Policies {
     Write-Output("==========================")
     Write-Output("Applying Security Policies")
-    secedit /configure /db "$($Env:WinDir)\security\local.sdb" /cfg ".\resources\secpol_config.inf" | Out-Null
+    secedit /configure /db "$($Env:WinDir)\security\local.sdb" /cfg "$($PSScriptRoot)resources\secpol_config.inf" | Out-Null
+}
+
+function Group-Policies {
+    Write-Output("=====================================")
+    Write-Output("Configuring Applications and Services")
+    #List of services to be configured
+    $services =@('WinUpdate', 'WinDefender', 'EventLog', 'Powershell', 'WinRM', 'SMBv1','Firefox','Chrome','IExplorer','MSEdge','RDP')
+
+    #Add to the list of services from user input
+    if((Read-Host -Prompt "Enable remote desktop? (y/n)") -eq "y") {
+        $services = $services + 'RDPOn'
+    } else {
+        $services = $services + 'RDPOff'
+    }
+
+    #Import the GroupPolicies.csv file into a variable
+    $pols = Import-Csv -Path "$($PSScriptRoot)\resources\gp\GroupPolicies.csv"
+
+    #Copy over required .admx and .adml files
+    foreach ($pol in $pols) {
+        if(($pol.Enabled -eq 'TRUE') -and (($pol.Service -eq [string]::Empty) -or ($services -contains $pol.Service))) {
+            $admxImportPath = "$($env:SystemRoot)\PolicyDefinitions\$($pol.Template).admx"
+            $admxExportPath = "$($PSScriptRoot)\resources\gp\Administrative Templates\$($pol.Template).admx"
+
+            if(-not ($pol.Template -eq [string]::Empty) -and -not (Test-Path -Path $admxImportPath)) {
+                try {
+                    Copy-Item $admxExportPath -Destination $admxImportPath -ErrorAction Stop
+                    Write-Output "Imported necessary file: $($admxExportPath) to $($admxImportPath)"
+                } catch {
+                    Write-Output "Failed to import file: $($admxExportPath) to $($admxImportPath)"
+                }
+            }
+
+            $admlImportPath = "$($env:SystemRoot)\PolicyDefinitions\en-us\$($pol.Template).adml"
+            $admlExportPath = "$($PSScriptRoot)\resources\gp\Administrative Templates\en-us\$($pol.Template).adml"
+
+            if(-not ($pol.Template -eq [string]::Empty) -and -not (Test-Path -Path $admlImportPath)) {
+                try {
+                    Copy-Item $admlExportPath -Destination $admlImportPath -ErrorAction Stop
+                    Write-Output "Imported necessary file: $($admlExportPath) to $($admlImportPath)"
+                } catch {
+                    Write-Output "Failed to import file: $($admlExportPath) to $($admlImportPath)"
+                }
+            }
+        }
+    }
+
+    #Set the path to the policy file that will be edited by the script
+    $polPath = "$($env:SystemRoot)\System32\GroupPolicy\Machine\registry.pol"
+
+    #Create a backup of the current computer configuration policy file
+    try {
+        $backupPath = "$($PSScriptRoot)\Backups\Registry($(Get-Date -Format "HH-mm-ss")).pol"
+        New-Item -ItemType Directory -Force -Path ($backupPath | Split-Path -Parent) | Out-Null
+        Copy-Item $polPath $backupPath -ErrorAction Stop
+        Write-Output "Created a backup of the policy file at $($backupPath)"
+    } catch {
+        Write-Output "Failed to create a backup of the policy file. The script will not continue."
+        cmd /c pause
+        exit
+    }
+
+    #Install PolicyFileEditor to enable manipulation of the pol file using scripts
+    #For some reason Tls1.2 specifically is required to install the module
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Install-PackageProvider -Name NuGet -Force | Out-Null
+    Install-Module -Name PolicyFileEditor -Force
+
+    #Go through each row in the array of group policy changes and apply them
+    foreach ($pol in $pols) {
+        #Only edit the policy if it is enabled in the csv and is for a service that needs to be configured
+        if(($pol.Enabled -eq 'TRUE') -and (($pol.Service -eq '') -or ($services -contains $pol.Service))) {
+            #Opional data type "Remove" will tell the program to delete the setting (set it to not configured)
+            if($pol.Type -eq 'Remove') {
+                Remove-PolicyFileEntry -Path $polPath -Key $pol.Key -ValueName $pol.Value
+            } else {
+                Set-PolicyFileEntry -Path $polPath -Key $pol.Key -ValueName $pol.Value -Data $pol.Data -Type $pol.Type
+            }
+            Write-Output "$($pol.Service) - $($pol.Name) is now set to $($pol.Setting)"
+        }
+    }
+
+    #Force Windows to recognize all of the changes and update group policy
+    Write-Output ""
+    gpupdate /force
 }
 
 
@@ -927,7 +1012,7 @@ while($var -le 5){
     Write-Host ""
     Write-Host "=================================="
     Write-Host "Windows 10 by Lakshay Kansal"
-    Write-Host "=========================================================================="
+    Write-Host "============================================================="
     Write-Host "1. User Config                      2. Firewall"
     Write-Host "3. Windows Features                 4. Shared Drives"
     Write-Host "5. Windows Defender                 6. User Rights"
@@ -935,9 +1020,10 @@ while($var -le 5){
     Write-Host "9. Automatic Updates                10. Registries"
     Write-Host "11. Find Files                      12. Enable UAC"
     Write-Host "13. Configure Services              14. Firefox Config"
-    Write-Host "15. Security Policies               16. System Integrity Scan (Takes Time)"
+    Write-Host "15. Security Policies               16. Group Policies"
+    Write-Host "17. System Integrity Scan (Takes Time)"
     Write-Host "98. Other                           99. Exit"
-    Write-Host "=========================================================================="
+    Write-Host "=============================================================="
     $Selection = Read-Host "Choose an Option"
     switch($Selection) {
         "1"{
@@ -983,8 +1069,13 @@ while($var -le 5){
         "14"{
             Firefox-Config
         }
-
+        "15"{
+            Security-Policies
+        }
         "16"{
+            Group-Policies
+        }
+        "17"{
             System-Integrity
         }
         "98"{
