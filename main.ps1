@@ -254,7 +254,7 @@ function Remote-Desktop {
 }
 
 function Disable-WindowsFeatures {
-    copy .\resources\Dism.exe C:\Windows\System32
+    Copy-Item ".\resources\Dism.exe" -Destination "C:\Windows\System32"
     Write-Output "Disable Features"
     Write-Host "`n--- Disabling IIS Services ---" -ForegroundColor Blue -BackgroundColor White
 
@@ -304,11 +304,6 @@ function Disable-WindowsFeatures {
 	dism /online /disable-feature /featurename:IIS-LegacyScripts
 	dism /online /disable-feature /featurename:IIS-LegacySnapIn
 
-    $confirmation = Read-Host "Disable SMB? [y/n]"
-    if ($confirmation -eq "y") {
-        dism /online /disable-feature /featurename:"SMB1Protocol"
-        Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
-    }
     $confirmation = Read-Host "Disable FTP? [y/n]"
     if ($confirmation -eq "y") {
         dism /online /disable-feature /featurename:IIS-FTPServer
@@ -316,11 +311,16 @@ function Disable-WindowsFeatures {
         dism /online /disable-feature /featurename:IIS-FTPExtensibility
         dism /online /disable-feature /featurename:TFTP
     }
+    $confirmation = Read-Host "Disable SMB? [y/n]"
+    if ($confirmation -eq "y") {
+        dism /online /disable-feature /featurename:"SMB1Protocol"
+        Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+    }
 }
 
 function UserRights {
     echo Installing NTRights
-    copy .\resources\ntrights.exe C:\Windows\System32
+    Copy-Item ".\resources\ntrights.exe" -Destination "C:\Windows\System32"
     $remove = @("Backup Operators","Everyone","Power Users","Users","NETWORK SERVICE","LOCAL SERVICE","Remote Desktop User","ANONOYMOUS LOGON","Guest","Performance Log Users")
     foreach ($person in $remove) {
         ntrights -U %%a -R SeNetworkLogonRight
@@ -382,7 +382,92 @@ function UAC {
 }
 
 function WindowsDefender {
+    Write-Host("======================================")
+    Write-Host("Configuring Windows Defender Policies:")
+    $x = Get-MpPreference
+
+    # Get exclusion path
+    if ($x.ExclusionPath -ne $NULL) {
+        Write-Host("================================================")
+        Write-Host("Removing the following ExclusionPath entries:")
+        foreach ($i in $x.ExclusionPath) {
+            Remove-MpPreference -ExclusionPath $i
+            Write-Host($i)
+        }
+        Write-Host("================================================")
+        Write-Host("Total ExclusionPath entries deleted:", $x.ExclusionPath.Count)
+    }
+    else {
+        Write-Host("No ExclusionPath entries present. Skipping...")
+    }
+
+    # Get exclusion process
+    if ($x.ExclusionProcess -ne $NULL) {
+        Write-Host("================================================")
+        Write-Host("Removing the following ExclusionProcess entries:")
+        foreach ($i in $x.ExclusionProcess) {
+            Remove-MpPreference -ExclusionProcess $i
+            Write-Host($i)
+        }
+        Write-Host("================================================")
+        Write-Host("Total ExclusionProcess entries deleted:", $x.ExclusionProcess.Count)
+    }
+    else {
+        Write-Host("No ExclusionProcess entries present. Skipping...")
+    }
+
+    # Get exclusion extension
+    if ($x.ExclusionExtension -ne $NULL) {
+        Write-Host("================================================")
+        Write-Host("Removing the following ExclusionExtension entries:")
+        foreach ($i in $x.ExclusionExtension) {
+            Remove-MpPreference -ExclusionExtension $i
+            Write-Host($i)
+        }
+        Write-Host("================================================")
+        Write-Host("Total ExclusionExtension entries deleted:", $x.ExclusionExtension.Count)
+    }
+    else {
+        Write-Host("No ExclusionExtension entries present. Skipping...")
+    }
+
+    # Summary
+    Write-Host("================================================")
+    Write-Host("SUMMARY")
+    Write-Host($x.ExclusionPath.Count, "ExclusionPath entries deleted.")
+    Write-Host($x.ExclusionProcess.Count, "ExclusionProcess entries deleted.")
+    Write-Host($x.ExclusionProcess.Count, "ExclusionExtension entries deleted.")
+    Write-Host(($x.ExclusionPath.Count + $x.ExclusionProcess.Count + $x.ExclusionExtension.Count), "Total entries deleted")
+
+    Write-Host("==================================================")
+    Write-Host("Setting Scans for Both Incoming and Outgoing Files")
+    Set-MpPreference -RealTimeScanDirection 0
+    Write-Host("=======================================")
+    Write-Host("Purging Quarantined Items after 90 days")
+    Set-MpPreference -QuarantinePurgeItemsAfterDelay 90
+    Write-Host("=====================================")
+    Write-Host("Setting Remediation Scans to Everyday")
+    Set-MpPreference -RemediationScheduleDay 0
+    Write-Host("========================================")
+    Write-Host("Setting Remediation Scans to run at 2 AM")
+    Set-MpPreference -RemediationScheduleTime 020000
+    Write-Host("=============================================")
+    Write-Host("Setting Action Time Out and Failure Time Outs")
+    Set-MpPreference -ReportingAdditionalActionTimeOut 10080
+    Set-MpPreference -ReportingCriticalFailureTimeOut 10080
+    Set-MpPreference -ReportingNonCriticalTimeOut 1440
+    Write-Host("===================================")
+    Write-Host("Setting Scan CPU Load Factor to 50%")
+    Set-MpPreference -ScanAvgCPULoadFactor 50
+    Write-Host("==========================================")
+    Write-Host("Check for new virus signatures before scan")
+    Set-MpPreference -CheckForSignaturesBeforeRunningScan $True
+    Set-MpPreference -ScanPurgeItemsAfterDelay 15
+    Write-Host("============================")
+    Write-Host("Enabling Realtime Monitoring")
     Set-MpPreference -DisableRealtimeMonitoring $False
+    Write-Host("========================")
+    Write-Host("Enabling IOAV Protection")
     Set-MpPreference -DisableIOAVProtection $False
     New-Item -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "Real-Time Protection" -Force
     New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender\Real-Time Protection" -Name "DisableBehaviorMonitoring" -Value 0 -PropertyType DWORD -Force
@@ -391,16 +476,8 @@ function WindowsDefender {
     New-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows Defender" -Name "DisableAntiSpyware" -Value 0 -PropertyType DWORD -Force
     start-service WinDefend
     start-service WdNisSvc
-    Set-MpPreference -AllowDatagramProcessingOnWinServer $False
     Set-MpPreference -AllowNetworkProtectionDownLevel $False
-    Set-MpPreference -AllowNetworkProtectionOnWinServer $False
-    Set-MpPreference -AllowSwitchToAsyncInspection $False
-    Set-MpPreference -AttackSurfaceReductionOnlyExclusions ""
-    Set-MpPreference -AttackSurfaceReductionRules_Actions ""
-    Set-MpPreference -AttackSurfaceReductionRules_Ids ""
-    Set-MpPreference -CheckForSignaturesBeforeRunningScan $False
-    Set-MpPreference -CloudBlockLevel 0
-    Set-MpPreference -CloudExtendedTimeout 0
+    Set-MpPreference -CloudBlockLevel 1
     Set-MpPreference -ControlledFolderAccessAllowedApplications ""
     Set-MpPreference -ControlledFolderAccessProtectedFolders ""
     Set-MpPreference -DefinitionUpdatesChannel 0
@@ -414,7 +491,7 @@ function WindowsDefender {
     Set-MpPreference -DisableDatagramProcessing $False
     Set-MpPreference -DisableDnsOverTcpParsing $False
     Set-MpPreference -DisableDnsParsing $False
-    Set-MpPreference -DisableEmailScanning $True
+    Set-MpPreference -DisableEmailScanning $False
     Set-MpPreference -DisableFtpParsing $False
     Set-MpPreference -DisableGradualRelease $False
     Set-MpPreference -DisableHttpParsing $False
@@ -448,22 +525,10 @@ function WindowsDefender {
     Set-MpPreference -MeteredConnectionUpdates $False
     Set-MpPreference -ModerateThreatDefaultAction 0
     Set-MpPreference -PlatformUpdatesChannel 0
-    Set-MpPreference -ProxyBypass ""
-    Set-MpPreference -ProxyPacUrl ""
-    Set-MpPreference -ProxyServer ""
-    Set-MpPreference -PUAProtection 0
-    Set-MpPreference -QuarantinePurgeItemsAfterDelay 90
+    Set-MpPreference -PUAProtection 1
     Set-MpPreference -RandomizeScheduleTaskTimes $True
-    Set-MpPreference -RealTimeScanDirection 0
-    Set-MpPreference -RemediationScheduleDay 0
-    Set-MpPreference -RemediationScheduleTime 020000
-    Set-MpPreference -ReportingAdditionalActionTimeOut 10080
-    Set-MpPreference -ReportingCriticalFailureTimeOut 10080
-    Set-MpPreference -ReportingNonCriticalTimeOut 1440
-    Set-MpPreference -ScanAvgCPULoadFactor 50
     Set-MpPreference -ScanOnlyIfIdleEnabled $True
     Set-MpPreference -ScanParameters 1
-    Set-MpPreference -ScanPurgeItemsAfterDelay 15
     Set-MpPreference -ScanScheduleDay 0
     Set-MpPreference -ScanScheduleOffset 120
     Set-MpPreference -ScanScheduleQuickScanTime 000000
@@ -477,7 +542,6 @@ function WindowsDefender {
     Set-MpPreference -SignatureBlobUpdateInterval 60
     Set-MpPreference -SignatureDefinitionUpdateFileSharesSources ""
     Set-MpPreference -SignatureDisableUpdateOnStartupWithoutEngine $False
-    Set-MpPreference -SignatureFallbackOrder MicrosoftUpdateServer|MMPC
     Set-MpPreference -SignatureFirstAuGracePeriod 120
     Set-MpPreference -SignatureScheduleDay Everyday
     Set-MpPreference -SignatureScheduleTime 120
@@ -490,10 +554,9 @@ function WindowsDefender {
     Set-MpPreference -TrustLabelProtectionStatus 0
     Set-MpPreference -UILockdown False ""
     Set-MpPreference -UnknownThreatDefaultAction 0
-    Set-MpPreference -PSComputerName ""
 
     #potentionally unwanted software
-    Set-MpPreference -PUAProtection enable
+    Set-MpPreference -PUAProtection 1
 
     #WMI persistance
     Add-MpPreference -AttackSurfaceReductionRules_Ids e6db77e5-3df2-4cf1-b95a-636979351e5b -AttackSurfaceReductionRules_Actions Enabled
@@ -1124,12 +1187,12 @@ function Other {
     powercfg -SETDCVALUEINDEX SCHEME_MIN SUB_NONE CONSOLELOCK 1
     powercfg -SETDCVALUEINDEX SCHEME_MAX SUB_NONE CONSOLELOCK 1
     Write-Output "Getting Hosts File"
-    copy C:\Windows\System32\drivers\etc\hosts .\hosts
+    Copy-Item "C:\Windows\System32\drivers\etc\hosts" -Destination ".\hosts"
 }
 
 function Firefox-Config {
-    copy .\resources\mozilla.cfg "C:\Program Files (x86)\Mozilla Firefox\"
-    copy .\resources\mozilla.cfg "C:\Program Files\Mozilla Firefox\"
+    Copy-Item ".\resources\mozilla.cfg" -Destination "C:\Program Files (x86)\Mozilla Firefox\"
+    Copy-Item ".\resources\mozilla.cfg" -Destination "C:\Program Files\Mozilla Firefox\"
 }
 
 
