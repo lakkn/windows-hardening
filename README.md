@@ -11,6 +11,12 @@ There is no **gain** in just building scripts and running them because it will *
 
 Take a look at the checklists to gain a **good** idea of how your thought proccess should be during competition.
 
+## Running
+```
+Set-ExecutionPolicy -Scope LocalMachine -ExecutionPolicy Unrestricted -Force
+
+.\main.ps1
+```
 
 ## Users
 ### this is still in beta so I am unsure if it will work to full capacity
