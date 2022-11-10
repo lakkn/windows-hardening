@@ -1222,10 +1222,16 @@ function System-Integrity {
     sfc /scannow
 }
 
+function Security-Policies {
+    Write-Output("==========================")
+    Write-Output("Applying Security Policies")
+    secedit /configure /db "$($Env:WinDir)\security\local.sdb" /cfg ".\resources\secpol_config.inf" | Out-Null
+}
+
 
 $var = 1
 while($var -le 5){
-    Write-Host "=========================="
+    Write-Host "=================================="
     Write-Host ""
     Write-Host "  _    _   ____    _____ "
     Write-Host " | |  | | |  _ \  |_   _|"
@@ -1234,9 +1240,9 @@ while($var -le 5){
     Write-Host " | |  | | | |_) |  _| |_ "
     Write-Host " |_|  |_| |____/  |_____|"
     Write-Host ""
-    Write-Host "=========================="
+    Write-Host "=================================="
     Write-Host "Windows 10 by Lakshay Kansal"
-    Write-Host "======================================================"
+    Write-Host "=========================================================================="
     Write-Host "1. User Config                      2. Firewall"
     Write-Host "3. Windows Features                 4. Shared Drives"
     Write-Host "5. Windows Defender                 6. User Rights"
@@ -1244,9 +1250,9 @@ while($var -le 5){
     Write-Host "9. Automatic Updates                10. Registries"
     Write-Host "11. Find Files                      12. Enable UAC"
     Write-Host "13. Configure Services              14. Firefox Config"
-    Write-Host "15. System Integrity Scan (Takes Time)"
+    Write-Host "15. Security Policies               16. System Integrity Scan (Takes Time)"
     Write-Host "98. Other                           99. Exit"
-    Write-Host "======================================================"
+    Write-Host "=========================================================================="
     $Selection = Read-Host "Choose an Option"
     switch($Selection) {
         "1"{
@@ -1292,7 +1298,8 @@ while($var -le 5){
         "14"{
             Firefox-Config
         }
-        "15"{
+
+        "16"{
             System-Integrity
         }
         "98"{
