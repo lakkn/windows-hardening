@@ -1216,6 +1216,12 @@ function Firefox-Config {
     Copy-Item ".\resources\mozilla.cfg" -Destination "C:\Program Files\Mozilla Firefox\"
 }
 
+function System-Integrity {
+    Write-Output("=============================")
+    Write-Output("Running System Integrity Scan")
+    sfc /scannow
+}
+
 
 $var = 1
 while($var -le 5){
@@ -1238,6 +1244,7 @@ while($var -le 5){
     Write-Host "9. Automatic Updates                10. Registries"
     Write-Host "11. Find Files                      12. Enable UAC"
     Write-Host "13. Configure Services              14. Firefox Config"
+    Write-Host "15. System Integrity Scan (Takes Time)"
     Write-Host "98. Other                           99. Exit"
     Write-Host "======================================================"
     $Selection = Read-Host "Choose an Option"
@@ -1284,6 +1291,9 @@ while($var -le 5){
         }
         "14"{
             Firefox-Config
+        }
+        "15"{
+            System-Integrity
         }
         "98"{
             Other
