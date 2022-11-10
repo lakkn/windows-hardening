@@ -2,8 +2,8 @@ function Users {
     $selection = Read-Host "Have you created users.txt and admins.txt [y/n]"
     if ($selection -eq 'y')
     {
-        $user_data = Get-Content "$($PSScriptRoot)users\users.txt"
-        $admin_data = Get-Content "$($PSScriptRoot)users\admins.txt"
+        $user_data = Get-Content "$($PSScriptRoot)\users\users.txt"
+        $admin_data = Get-Content "$($PSScriptRoot)\users\admins.txt"
         $all_users = Get-WMIObject Win32_UserAccount -filter 'LocalAccount=TRUE' | select-object -ExpandProperty Name
         Write-Output $all_users
         for($i = 0; $i -lt $user_data.Length; $i++)
@@ -12,7 +12,8 @@ function Users {
             if($all_users -contains $current_user)
             {
                 Write-Output "User Exists"
-                net user $current_user 'Sup3rS3cur3P@55w0rd@123'
+                $UserAccount = Get-LocalUser -Name $current_user
+                $UserAccount | Set-LocalUser -Password 'Sup3rS3cur3P@55w0rd@123'
             }else
             {
                 Write-Output "Creating Account for User " + $current_user
@@ -73,19 +74,19 @@ function Files {
     foreach($ext in $extensions)
     {
         Write-host "Checking for .$ext files"
-        if(Test-path "$($PSScriptRoot)files_output\$ext.txt"){
-            Clear-content "$($PSScriptRoot)files_output\$ext.txt"
+        if(Test-path "$($PSScriptRoot)\files_output\$ext.txt"){
+            Clear-content "$($PSScriptRoot)\files_output\$ext.txt"
         }
-        C:\Windows\System32\cmd.exe /C dir C:\*.$ext /s /b | Out-File "$($PSScriptRoot)files_output\$ext.txt"
+        C:\Windows\System32\cmd.exe /C dir C:\*.$ext /s /b | Out-File "$($PSScriptRoot)\files_output\$ext.txt"
     }
     Write-host "Finished searching by extension"
     Write-host "Checking for $tools"
     foreach($tool in $tools){
         Write-host "Checking for $tool"
-        if(Test-path "$($PSScriptRoot)files_output\$tool.txt"){
-            Clear-content "$($PSScriptRoot)files_output\$tool.txt"
+        if(Test-path "$($PSScriptRoot)\files_output\$tool.txt"){
+            Clear-content "$($PSScriptRoot)\files_output\$tool.txt"
         }
-        C:\Windows\System32\cmd.exe /C dir C:\*$tool* /s /b | Out-File "$($PSScriptRoot)files_output\$tool.txt"
+        C:\Windows\System32\cmd.exe /C dir C:\*$tool* /s /b | Out-File "$($PSScriptRoot)\files_output\$tool.txt"
     }
     Write-host "Finished searching for tools"
 }
@@ -262,7 +263,7 @@ function Remote-Desktop {
 function Disable-WindowsFeatures {
     Write-Host("===============")
     Write-Host("Installing Dism")
-    Copy-Item "$($PSScriptRoot)resources\Dism.exe" -Destination "C:\Windows\System32"
+    Copy-Item "$($PSScriptRoot)\resources\Dism.exe" -Destination "C:\Windows\System32"
     Write-Host "=============================="
     Write-Host "--- Disabling IIS Services ---" -ForegroundColor Blue -BackgroundColor White
 
@@ -329,7 +330,7 @@ function Disable-WindowsFeatures {
 function UserRights {
     Write-Host("===================")
     Write-Host("Installing NTRights")
-    Copy-Item "$($PSScriptRoot)resources\ntrights.exe" -Destination "C:\Windows\System32"
+    Copy-Item "$($PSScriptRoot)\resources\ntrights.exe" -Destination "C:\Windows\System32"
     Write-Host("===================")
     Write-Host("Setting User Rights")
     $remove = @("Backup Operators","Everyone","Power Users","Users","NETWORK SERVICE","LOCAL SERVICE","Remote Desktop User","ANONOYMOUS LOGON","Guest","Performance Log Users")
@@ -833,7 +834,7 @@ function Registries {
 function Configure-Services {
     Write-Host("=================================")
     Write-Host("Configuring Good and Bad Services")
-    $services = Import-Csv -Path "$($PSScriptRoot)resources\services.csv"
+    $services = Import-Csv -Path "$($PSScriptRoot)\resources\services.csv"
     foreach ($service in $services) {
 
         if ((Get-Service | where name -eq $service.Process) -eq $null) {
@@ -893,12 +894,12 @@ function Other {
     powercfg -SETDCVALUEINDEX SCHEME_MAX SUB_NONE CONSOLELOCK 1
     Write-Ouput "==================="
     Write-Output "Getting Hosts File"
-    Copy-Item "C:\Windows\System32\drivers\etc\hosts" -Destination "$($PSScriptRoot)hosts"
+    Copy-Item "C:\Windows\System32\drivers\etc\hosts" -Destination "$($PSScriptRoot)\hosts"
 }
 
 function Firefox-Config {
-    Copy-Item "$($PSScriptRoot)resources\mozilla.cfg" -Destination "C:\Program Files (x86)\Mozilla Firefox\"
-    Copy-Item "$($PSScriptRoot)resources\mozilla.cfg" -Destination "C:\Program Files\Mozilla Firefox\"
+    Copy-Item "$($PSScriptRoot)\resources\mozilla.cfg" -Destination "C:\Program Files (x86)\Mozilla Firefox\"
+    Copy-Item "$($PSScriptRoot)\resources\mozilla.cfg" -Destination "C:\Program Files\Mozilla Firefox\"
 }
 
 function System-Integrity {
@@ -910,7 +911,7 @@ function System-Integrity {
 function Security-Policies {
     Write-Output("==========================")
     Write-Output("Applying Security Policies")
-    secedit /configure /db "$($Env:WinDir)\security\local.sdb" /cfg "$($PSScriptRoot)resources\secpol_config.inf" | Out-Null
+    secedit /configure /db "$($Env:WinDir)\security\local.sdb" /cfg "$($PSScriptRoot)\resources\secpol_config.inf" | Out-Null
 }
 
 function Group-Policies {
