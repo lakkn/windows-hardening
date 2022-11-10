@@ -90,8 +90,9 @@ function Files {
     Write-host "Finished searching for tools"
 }
 
-function LocalPolicies {
-    echo Setting auditing success and failure for all categories
+function Auditing {
+    Write-Output "============================================"
+    Write-Output "Setting Audit Policies and Powershell Audits"
     auditpol /set /category:* /success:enable
     auditpol /set /category:* /failure:enable
     echo Set auditing success and failure
@@ -106,6 +107,7 @@ function LocalPolicies {
 }
 
 function AutoUpdates {
+    Write-Output "================================="
     Write-Output "Setting Windows Automatic Updates"
     reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v AutoInstallMinorUpdates /t REG_DWORD /d 1 /f
     reg add HKLM\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU /v NoAutoUpdate /t REG_DWORD /d 0 /f
@@ -119,6 +121,7 @@ function AutoUpdates {
 }
 
 function Enable-Firewall {
+    Write-Output "================="
     Write-Output "Enabling Firewall"
     Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
 	Set-NetFirewallProfile -DefaultInboundAction Block -DefaultOutboundAction Allow -NotifyOnListen True -AllowUnicastResponseToMulticast True -LogFileName %SystemRoot%\System32\LogFiles\Firewall\pfirewall.log
@@ -203,8 +206,10 @@ function Enable-Firewall {
 }
 
 function Remote-Desktop {
+    Write-Output("================================")
     $choice = Read-Host "Is Remote Desktop Critical [y/n]"
     if($choice -eq "y"){
+        Write-Output "======================="
         Write-Output "Securing Remote Desktop"
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v UserAuthentication /t REG_DWORD /d 1 /f
@@ -226,6 +231,7 @@ function Remote-Desktop {
         reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "AllowSignedFiles" /t REG_DWORD /d 0 /f
         reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v "AllowUnsignedFiles" /t REG_DWORD /d 0 /f
     }else{
+        Write-Output "========================"
         Write-Output "Disabling Remote Desktop"
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v UserAuthentication /t REG_DWORD /d 0 /f
@@ -254,9 +260,11 @@ function Remote-Desktop {
 }
 
 function Disable-WindowsFeatures {
+    Write-Host("===============")
+    Write-Host("Installing Dism")
     Copy-Item ".\resources\Dism.exe" -Destination "C:\Windows\System32"
-    Write-Output "Disable Features"
-    Write-Host "`n--- Disabling IIS Services ---" -ForegroundColor Blue -BackgroundColor White
+    Write-Host "=============================="
+    Write-Host "--- Disabling IIS Services ---" -ForegroundColor Blue -BackgroundColor White
 
     dism /online /disable-feature /featurename:IIS-WebServerRole
 	dism /online /disable-feature /featurename:IIS-WebServer
@@ -319,8 +327,11 @@ function Disable-WindowsFeatures {
 }
 
 function UserRights {
-    echo Installing NTRights
+    Write-Host("===================")
+    Write-Host("Installing NTRights")
     Copy-Item ".\resources\ntrights.exe" -Destination "C:\Windows\System32"
+    Write-Host("===================")
+    Write-Host("Setting User Rights")
     $remove = @("Backup Operators","Everyone","Power Users","Users","NETWORK SERVICE","LOCAL SERVICE","Remote Desktop User","ANONOYMOUS LOGON","Guest","Performance Log Users")
     foreach ($person in $remove) {
         ntrights -U %%a -R SeNetworkLogonRight
@@ -354,7 +365,8 @@ function UserRights {
 }
 
 function Get-SharedDrives {
-    Write-Output "Checking for Shared Drives`n"
+    Write-Output "=========================="
+    Write-Output "Checking for Shared Drives"
     $shares = Get-WmiObject -class Win32_Share | Select-Object Name
     foreach ($share in $shares) {
         Write-Output $share.Name
@@ -371,6 +383,7 @@ function Get-SharedDrives {
 }
 
 function UAC {
+    Write-Host "=============="
     Write-Host "Setting up UAC"
     secedit /export /cfg c:\secpol.cfg
     (Get-Content C:\secpol.cfg) -replace "MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\ConsentPromptBehaviorAdmin.*", "MACHINE\Software\Microsoft\Windows\CurrentVersion\Policies\System\ConsentPromptBehaviorAdmin=4,2" | Out-File C:\secpol.cfg
@@ -566,12 +579,14 @@ function WindowsDefender {
     Add-MpPreference -AttackSurfaceReductionRules_Ids C1DB55AB-C21A-4637-BB3F-A12568109D35 -AttackSurfaceReductionRules_Actions Enabled
     #prevent stealing from LSASS
     Add-MpPreference -AttackSurfaceReductionRules_Ids 9E6C4E1F-7D60-472F-BA1A-A39EF669E4B2 -AttackSurfaceReductionRules_Actions Enabled
-
+    Write-Host "========================="
     Write-Host "Updating Windows Defender"
     Update-MpSignature
 }
 
 function Registries {
+    Write-Output "========================="
+    Write-Output "Running Random Registries"
     # Detachable Storage
     reg ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AllocateCDRoms /t REG_DWORD /d 1 /f
     reg ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v AllocateFloppies /t REG_DWORD /d 1 /f
@@ -816,6 +831,7 @@ function Registries {
 }
 
 function Configure-Services {
+    Wirte-Output "======================"
     Write-Output "Disabling Bad Services"
 
     $String = Write-Output "Is telnet necessary [y/n]?"
@@ -1149,7 +1165,8 @@ function Configure-Services {
 	}
 
     #goodservices
-    Write-Output "Enabling Good Services"
+    Write-Output "==================================="
+    Write-Output "Enabling and Starting Good Services"
 
     Start-Service wuauserv
     Set-Service -Name wuauserv -StartupType Automatic
@@ -1178,14 +1195,18 @@ function Configure-Services {
 }
 
 function Other {
-    Write-Output "Clear DNS Cache"
+    Write-Output "=================="
+    Write-Output "Clearing DNS Cache"
     ipconfig /flushdns
-    Write-Output "Empty Recycling Bins"
+    Write-Output "======================="
+    Write-Output "Emptying Recycling Bins"
     Clear-RecycleBin -DriveLetter C
+    Write-Output "======================"
     Write-Output "Setting Power Settings"
     powercfg -SETDCVALUEINDEX SCHEME_BALANCED SUB_NONE CONSOLELOCK 1
     powercfg -SETDCVALUEINDEX SCHEME_MIN SUB_NONE CONSOLELOCK 1
     powercfg -SETDCVALUEINDEX SCHEME_MAX SUB_NONE CONSOLELOCK 1
+    Write-Ouput "==================="
     Write-Output "Getting Hosts File"
     Copy-Item "C:\Windows\System32\drivers\etc\hosts" -Destination ".\hosts"
 }
@@ -1198,22 +1219,27 @@ function Firefox-Config {
 
 $var = 1
 while($var -le 5){
-    Write-Host "  _    _            _               ____                                      __   _____       _       _ _"
-    Write-Host " | |  | |          | |             |  _ \                                    / _| |_   _|     | |     | | |(_)"
-    Write-Host " | |__| | __ _  ___| | _____ _,__  | |_) |_   _ _,__ ___  __ _ _   _    ___ | |_    | |  _ __ | |_ ___| | || |__ _  ___ _ __   ___ ___"
-    Write-Host " |  __  |/ _, |/ __| |/ / _ \  __| |  _ <| | | |  __/ _ \/ _, | | | |  / _ \|  _|   | | | '_ \| __/ _ \ | || |/ _` |/ _ \ '_ \ / __/ _ \"
-    Write-Host " | |  | | (_| | (__|   <  __/ |    | |_) | |_| | | |  __/ (_| | |_| | | (_) | |    _| |_| | | | ||  __/ | || | (_| |  __/ | | | (_|  __/"
-    Write-Host " |_|  |_|\__,_|\___|_|\_\___|_|    |____/ \__,_|_|  \___|\__,_|\__,_|  \___/|_|   |_____|_| |_|\__\___|_|_|| |\__, |\___|_| |_|\___\___|"
-    Write-Host "                                                                                                             __/ |                    "
-    Write-Host "                                                                                                             |___/"
+    Write-Host "=========================="
+    Write-Host ""
+    Write-Host "  _    _   ____    _____ "
+    Write-Host " | |  | | |  _ \  |_   _|"
+    Write-Host " | |__| | | |_) |   | |  "
+    Write-Host " |  __  | |  _ <    | |  "
+    Write-Host " | |  | | | |_) |  _| |_ "
+    Write-Host " |_|  |_| |____/  |_____|"
+    Write-Host ""
+    Write-Host "=========================="
+    Write-Host "Windows 10 by Lakshay Kansal"
+    Write-Host "======================================================"
     Write-Host "1. User Config                      2. Firewall"
     Write-Host "3. Windows Features                 4. Shared Drives"
     Write-Host "5. Windows Defender                 6. User Rights"
-    Write-Host "7. Remote Desktop                   8. Local Policies"
+    Write-Host "7. Remote Desktop                   8. Auditing"
     Write-Host "9. Automatic Updates                10. Registries"
     Write-Host "11. Find Files                      12. Enable UAC"
     Write-Host "13. Configure Services              14. Firefox Config"
     Write-Host "98. Other                           99. Exit"
+    Write-Host "======================================================"
     $Selection = Read-Host "Choose an Option"
     switch($Selection) {
         "1"{
@@ -1238,7 +1264,7 @@ while($var -le 5){
             Remote-Desktop
         }
         "8"{
-            LocalPolicies
+            Auditing
         }
         "9"{
             AutoUpdates
@@ -1250,6 +1276,7 @@ while($var -le 5){
             Files
         }
         "12"{
+            UAC
             Write-Host "Search Bar - Type 'UAC' - Set to highest level"
         }
         "13"{
@@ -1267,5 +1294,6 @@ while($var -le 5){
     }
     if($var -lt 5){
         Read-Host "Enter to Continue"
+        Clear-Host
     }
 }
