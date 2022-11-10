@@ -1,0 +1,83 @@
+Name,Process,Mode
+Base Filtering Engine,bfe,Automatic
+DHCP Client,dhcp,Automatic
+DNS Client,dnscache,Automatic
+File Replication Service,ntfrs,Automatic
+Intersite Messaging Service,ismserv,Automatic
+Kerberos Key Distribution Center Service,kdc,Automatic
+Security Center,wscsvc,Automatic
+Smart Card Device Enumeration Service,scdeviceenum,Automatic
+Smart Card Removal Policy,scpolicysvc,Automatic
+Task Scheduler,schedule,Automatic
+Windows Defender Advanced Threat Protection Service,sense,Automatic
+Windows Defender Antivirus Network Inspection Service,wdnissvc,Automatic
+Windows Defender Antivirus Service,windefend,Automatic
+Windows Event Log,eventlog,Automatic
+Windows Firewall,mpssvc,Automatic
+Windows Modules Installer,trustedinstaller,Manual
+Windows Time,w32time,Manual
+Windows Update,wuauserv,Manual
+Bluetooth Audio Gateway Service,btagservice,Disabled
+Bluetooth Support Service,bthserv,Disabled
+COM+ Event System,eventsystem,Disabled
+Computer Browser,browser,Disabled
+Distributed Link Tracking Client,trkwks,Disabled
+Distributed Transaction Coordinator,msdtc,Disabled
+Downloaded Maps Manager,mapsbroker,Disabled
+Geolocation Service,lfsvc,Disabled
+Human Interface Device Service,hidserv,Disabled
+IIS Admin Service,iisadmin,Disabled
+Infrared Monitor Service,irmon,Disabled
+Internet Connection Sharing (ICS),sharedaccess,Disabled
+IP Helper,iphlpsvc,Disabled
+IPsec Policy Agent,policyagent,Disabled
+Link-Layer Topology Discovery Mapper,lltdsvc,Disabled
+LxssManager,lxssmanager,Disabled
+Microsoft FTP Service,ftpsvc,Disabled
+Microsoft iSCSI Initiator Service,msiscsi,Disabled
+Microsoft Store Install Service,installservice,Disabled
+Net.Tcp Port Sharing Service,nettcpportsharing,Disabled
+Netlogon,netlogon,Disabled
+Offline Files,cscservice,Disabled
+OpenSSH SSH Server,sshd,Disabled
+Peer Name Resolution Protocol,pnrpsvc,Disabled
+Peer Networking Grouping,p2psvc,Disabled
+Peer Networking Identity Manager,p2pimsvc,Disabled
+PNRP Machine Name Publication Service,pnrpautoreg,Disabled
+Print Spooler,spooler,Disabled
+Problem Reports and Solutions Control Panel Support,wercplsupport,Disabled
+Remote Access Auto Connection Manager,rasauto,Disabled
+Remote Access Connection Manager,rasman,Disabled
+Remote Desktop Services UserMode Port Redirector,umrdpservice,Disabled
+Remote Procedure Call (RPC),rpcss,Disabled
+Remote Procedure Call (RPC) Locator,rpclocator,Disabled
+Remote Registry,remoteregistry,Disabled
+Routing and Remote Access,remoteaccess,Disabled
+Secondary Logon,seclogon,Disabled
+Server,lanmanserver,Disabled
+Simple TCP/IP Services,simptcp,Disabled
+Smart Card,scardsvr,Disabled
+SNMP Service,snmp,Disabled
+SNMP Trap,snmptrap,Disabled
+SSDP Discovery,ssdpsrv,Disabled
+SysMain,sysmain,Disabled
+System Event Notification Service,sens,Disabled
+Telephony,tapisrv,Disabled
+Themes,themes,Disabled
+Touch Keyboard and Handwriting Panel Service,tabletinputservice,Disabled
+UPnP Device Host,upnphost,Disabled
+Virtual Disk,vds,Disabled
+Volume Shadow Copy,vss,Disabled
+Web Management Service,wmsvc,Disabled
+Windows Error Reporting Service,wersvc,Disabled
+Windows Event Collector,wecsvc,Disabled
+Windows Media Player Network Sharing Service,wmpnetworksvc,Disabled
+Windows Mobile Hotspot Service,icssvc,Disabled
+Windows Push Notifications System Service,wpnservice,Disabled
+Windows PushToInstall Service,pushtoinstall,Disabled
+Windows Remote Management (WS-Management),winrm,Disabled
+World Wide Web Publishing Service,w3svc,Disabled
+Xbox Accessory Management Service,xboxgipsvc,Disabled
+Xbox Live Auth Manager,xblauthmanager,Disabled
+Xbox Live Game Save,xblgamesave,Disabled
+Xbox Live Networking Services,xboxnetapisvc,Disabled

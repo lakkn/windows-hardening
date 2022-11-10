@@ -831,367 +831,52 @@ function Registries {
 }
 
 function Configure-Services {
-    Wirte-Output "======================"
-    Write-Output "Disabling Bad Services"
+    Write-Host("=================================")
+    Write-Host("Configuring Good and Bad Services")
+    $services = Import-Csv -Path ".\resources\services.csv"
+    foreach ($service in $services) {
 
-    $String = Write-Output "Is telnet necessary [y/n]?"
-	$Selection = Read-Host $String
-	switch ($Selection) {
-	    "y"{
-            cmd.exe /c 'sc start tlntsvr'
-            cmd.exe /c 'sc config tlntvr start= auto'
-	    }
-	    "n"{
-            cmd.exe /c 'sc stop tlntsvr'
-	        cmd.exe /c 'sc config tlntsvr start= disabled'
-		}
+        if ((Get-Service | where name -eq $service.Process) -eq $null) {
+            Write-Host "$($service.Name) is not installed on this computer. Ignoring."
+            continue
+        }
+
+        if ((Get-Service | where name -eq $service.Process).StartType -eq $service.Mode) {
+            Write-Host "$($service.Name) is already configured correctly. No action taken."
+            continue
+        }
+
+        try {
+            Set-Service -Name $service.Process -StartupType $service.Mode -ErrorAction Stop
+            Write-Host "$($service.Name) was configured incorrectly. Startup type has been switched to $($service.Mode)." -ForegroundColor green
+        } catch {
+            Write-Host "Failed to change startup type for $($service.Name) to $($service.Mode)." -ForegroundColor red
+            continue
+        }
+
+        if (($service.Mode -eq 'Automatic') -and -not ((Get-Service | where name -eq $service.Process).Status -eq 'Running')) {
+            try {
+                Start-Service -Name $service.Process -ErrorAction Stop | Out-Null
+                Write-Host "$($service.Name) is now started." -ForegroundColor green
+            } catch {
+                Write-Host "Failed to start the $($service.Name) service." -ForegroundColor red
+                continue
+            }
+        }
+
+        if (($service.Mode -eq 'Disabled') -and -not ((Get-Service | where name -eq $service.Process).Status -eq 'Stopped')) {
+            try {
+                Stop-Service -Name $service.Process -ErrorAction Stop | Out-Null
+                Write-Host "$($service.Name) is now stopped." -ForegroundColor green
+            } catch {
+                Write-Host "Failed to stop the $($service.Name) service." -ForegroundColor red
+                continue
+            }
+
+        }
     }
-    $String = Write-Output "Is FTP necessary [y/n]?"
-	$Selection = Read-Host $String
-	switch ($Selection) {
-	    "y"{
-	        Start-Service msftpsvc
-            cmd.exe /c 'sc start msftpsvc'
-            cmd.exe /c 'sc config msftpsvc start= auto'
-            cmd.exe /c 'sc start Msftpsvc'
-            cmd.exe /c 'sc config Msftpsvc start= auto'
-            cmd.exe /c 'sc start ftpsvc'
-            cmd.exe /c 'sc config ftpsvc start= auto'
-	    }
-	    "n"{
-            cmd.exe /c 'sc stop msftpsvc'
-	        cmd.exe /c 'sc config msftpsvc start= disabled'
-            cmd.exe /c 'sc stop Msftpsvc'
-            cmd.exe /c 'sc config Msftpsvc start= disabled'
-            cmd.exe /c 'sc stop ftpsvc'
-            cmd.exe /c 'sc config ftpsvc start= disabled'
-		}
-    }
-    $String = Write-Output "Is SMTP necessary [y/n]?"
-	$Selection = Read-Host $String
-	switch ($Selection) {
-	    "y"{
-            cmd.exe /c 'sc start Smtpsvc'
-            cmd.exe /c 'sc config Smtpsvc start= auto'
-	    }
-	    "n"{
-            cmd.exe /c 'sc stop Smtpsvc'
-	        cmd.exe /c 'sc config Smtpsvc start= disabled'
-		}
-    }
-    $String = Write-Output "Is Remote Desktop necessary [y/n]?"
-	$Selection = Read-Host $String
-	switch ($Selection) {
-	    "y"{
-	        Start-Service TermService
-	        Set-Service -Name TermService -StartupType Automatic
-	    }
-	    "n"{
-	        Stop-Service TermService -Force
-	        Set-Service -Name TermService -StartupType Disabled
-            Stop-Service SessionEnv -Force
-            Set-Service -Name SessionEnv -StartupType Disabled
-            Stop-Service RemoteRegistry -Force
-            Set-Service -Name RemoteRegistry -StartupType Disabled
-		}
-    }
-	Stop-Service SNMPTRAP -Force
-	Set-Service -Name SNMPTRAP -StartupType Disabled
-	Stop-Service SSDPSRV -Force
-	Set-Service -Name SSDPSRV -StartupType Disabled
-	try{
-        cmd.exe /c 'sc stop Messenger'
-        cmd.exe /c 'sc config Messenger start= disabled'
-	}catch{
-        Write-Host "Service not found"
-	}
-	Stop-Service upnphost -Force
-	Set-Service -Name upnphost -StartupType Disabled
-	try{
-	cmd.exe /c 'sc stop WAS'
-	cmd.exe /c 'sc config WAS start= disabled'
-	}catch{
-        Write-Host "Service not found"
-	}
-	#might be remote desktop stuff
-	Stop-Service RemoteAccess -Force
-	Set-Service -Name RemoteAccess -StartupType Disabled
-	Stop-Service RasMan -Force
-	Set-Service -Name RasMan -StartupType Disabled
-	Stop-Service RpcSs -Force
-	Set-Service -Name RpcSs -StartupType Disabled
-	Stop-Service RasAuto -Force
-	Set-Service -Name RasAuto -StartupType Disabled
-	Stop-Service UmRdpService -Force
-	Set-Service -Name UmRdpService -StartupType Disabled
-    try{
-	cmd.exe /c 'sc stop mnmsrvc'
-	cmd.exe /c 'sc config mnmsrvc start= disabled'
-	}catch{
-        Write-Host "Service not found"
-	}
-	try{
-	cmd.exe /c 'sc stop NetTcpPortSharing'
-	cmd.exe /c 'sc config NetTcpPortSharing start= disabled'
-	}catch{
-        Write-Host "Service not found"
-	}
-	Stop-Service TabletInputService -Force
-	Set-Service -Name TabletInputService -StartupType Disabled
-	Stop-Service SENS -Force
-	Set-Service -Name SENS -StartupType Disabled
-	Stop-Service EventSystem -Force
-	Set-Service -Name EventSystem -StartupType Disabled
-
-	Write-Output "Disabling XBox services"
-	Stop-Service XblAuthManager -Force
-	Set-Service -Name XblAuthManager -StartupType Disabled
-	Stop-Service XblGameSave -Force
-	Set-Service -Name XblGameSave -StartupType Disabled
-	Stop-Service XboxGipSvc -Force
-	Set-Service -Name XboxGipSvc -StartupType Disabled
-	Stop-Service XboxNetApiSvc -Force
-	Set-Service -Name XboxNetApiSvc -StartupType Disabled
-	try{
-	cmd.exe /c 'sc stop xboxgip'
-	cmd.exe /c 'sc config xboxgip start= disabled'
-	}catch{
-        Write-Host "Service not found"
-	}
-	try{
-	cmd.exe /c 'sc stop xbgm'
-	cmd.exe /c 'sc config xbgm start= disabled'
-	}catch{
-        Write-Host "Service not found"
-	}
-
-	Stop-Service SysMain -Force
-	Set-Service -Name SysMain -StartupType Disabled
-	Stop-Service seclogon -Force
-	Set-Service -Name seclogon -StartupType Disabled
-	Stop-Service TapiSrv -Force
-	Set-Service -Name TapiSrv -StartupType Disabled
-	Stop-Service p2pimsvc -Force
-	Set-Service -Name p2pimsvc -StartupType Disabled
-	try{
-    cmd.exe /c 'sc stop simptcp'
-    cmd.exe /c 'sc config simptcp start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop fax'
-    cmd.exe /c 'sc config fax start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop iprip'
-    cmd.exe /c 'sc config iprip start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop W3svc'
-    cmd.exe /c 'sc config W3svc start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop Dfs'
-    cmd.exe /c 'sc config Dfs start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-	Stop-Service TrkWks -Force
-	Set-Service -Name TrkWks -StartupType Disabled
-	Stop-Service MSDTC -Force
-	Set-Service -Name MSDTC -StartupType Disabled
-    try{
-    cmd.exe /c 'sc stop ERSvc'
-    cmd.exe /c 'sc config ERSvc start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop NtFrs'
-    cmd.exe /c 'sc config NtFrs start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop Iisadmin'
-    cmd.exe /c 'sc config Iisadmin start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop IsmServ'
-    cmd.exe /c 'sc config IsmServ start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop WmdmPmSN'
-    cmd.exe /c 'sc config WmdmPmSN start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop helpsvc'
-    cmd.exe /c 'sc config helpsvc start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-	Stop-Service Spooler -Force
-	Set-Service -Name Spooler -StartupType Disabled
-    try{
-    cmd.exe /c 'sc stop RDSessMgr'
-    cmd.exe /c 'sc config RDSessMgr start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop RSoPProv'
-    cmd.exe /c 'sc config RSoPProv start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-	Stop-Service SCardSvr -Force
-	Set-Service -Name SCardSvr -StartupType Disabled
-	Stop-Service LanmanServer -Force
-	Set-Service -Name LanmanServer -StartupType Disabled
-    try{
-    cmd.exe /c 'sc stop Sacsvr'
-    cmd.exe /c 'sc config Sacsvr start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop uploadmgr'
-    cmd.exe /c 'sc config uploadmgr start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-	Stop-Service vds -Force
-	Set-Service -Name vds -StartupType Disabled
-	Stop-Service VSS -Force
-	Set-Service -Name VSS -StartupType Disabled
-    try{
-    cmd.exe /c 'sc stop WINS'
-    cmd.exe /c 'sc config WINS start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-	Stop-Service CscService -Force
-	Set-Service -Name CscService -StartupType Disabled
-	Stop-Service hidserv -Force
-	Set-Service -Name hidserv -StartupType Disabled
-    try{
-    cmd.exe /c 'sc stop IPBusEnum'
-    cmd.exe /c 'sc config IPBusEnum start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-	Stop-Service PolicyAgent -Force
-	Set-Service -Name PolicyAgent -StartupType Disabled
-	Stop-Service SharedAccess -Force
-	Set-Service -Name SharedAccess -StartupType Disabled
-	Stop-Service SSDPSRV -Force
-	Set-Service -Name SSDPSRV -StartupType Disabled
-	Stop-Service Themes -Force
-	Set-Service -Name Themes -StartupType Disabled
-    try{
-    cmd.exe /c 'sc stop nfssvc'
-    cmd.exe /c 'sc config nfssvc start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop nfsclnt'
-    cmd.exe /c 'sc config nfsclnt start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop MSSQLServerADHelper'
-    cmd.exe /c 'sc config MSSQLServerADHelper start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop Server'
-    cmd.exe /c 'sc config Server start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop TeamViewer'
-    cmd.exe /c 'sc config TeamViewer start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop TeamViewer7'
-    cmd.exe /c 'sc config TeamViewer7 start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop HomeGroupListener'
-    cmd.exe /c 'sc config HomeGroupListener start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-    try{
-    cmd.exe /c 'sc stop HomeGroupProvider'
-    cmd.exe /c 'sc config HomeGroupProvider start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-	Stop-Service AxInstSV -Force
-	Set-Service -Name AxInstSV -StartupType Disabled
-	Stop-Service Netlogon -Force
-	Set-Service -Name Netlogon -StartupType Disabled
-	Stop-Service lltdsvc -Force
-	Set-Service -Name lltdsvc -StartupType Disabled
-	Stop-Service iphlpsvc -Force
-	Set-Service -Name iphlpsvc -StartupType Disabled
-    try{
-    cmd.exe /c 'sc stop AdobeARMservice'
-    cmd.exe /c 'sc config AdobeARMservice start= disabled'
-    }catch{
-        Write-Host "Service not found"
-	}
-
-    #goodservices
-    Write-Output "==================================="
-    Write-Output "Enabling and Starting Good Services"
-
-    Start-Service wuauserv
-    Set-Service -Name wuauserv -StartupType Automatic
-    Start-Service EventLog
-    Set-Service -Name EventLog -StartupType Automatic
-    Start-Service mpssvc
-    Set-Service -Name mpssvc -StartupType Automatic
-    Start-Service WinDefend
-    Set-Service -Name WinDefend -StartupType Automatic
-    Start-Service WdNisSvc
-    Set-Service -Name WdNisSvc -StartupType Automatic
-    Start-Service Sense
-    Set-Service -Name Sense -StartupType Automatic
-    Start-Service Schedule
-    Set-Service -Name Schedule -StartupType Automatic
-    Start-Service SCardSvr
-    Set-Service -Name SCardSvr -StartupType Automatic
-    Start-Service ScDeviceEnum
-    Set-Service -Name ScDeviceEnum -StartupType Automatic
-    Start-Service SCPolicySvc
-    Set-Service -Name SCPolicySvc -StartupType Automatic
-    Start-Service wscsvc
-    Set-Service -Name wscsvc -StartupType Automatic
-
-    Write-Output "Services Configured"
+    Write-Host("===================")
+    Write-Host("Services Configured")
 }
 
 function Other {
