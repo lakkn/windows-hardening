@@ -62,6 +62,7 @@ function Users {
     wmic UserAccount set PasswordExpires=True
     wmic UserAccount set PasswordChangeable=True
     wmic UserAccount set PasswordRequired=True
+    Write-Output "Change passwords manually and double check all users (this is still beta)"
     Write-Output "Remember to double check users and password policies in secpol.msc"
 }
 
