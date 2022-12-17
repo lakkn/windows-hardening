@@ -1,279 +1,51 @@
-function Application-Security{
-    $Selection = Read-Host "Secure Firefox [y/n]:"
-    if($Selection -eq 'y'){
-        # Set Firefox to the most secure settings
-        $firefoxProfilePath = "$env:APPDATA\Mozilla\Firefox\Profiles"
-
-        # Get all Firefox profiles
-        $profiles = Get-ChildItem -Path $firefoxProfilePath -Directory
-
-        # Loop through all profiles
-        foreach ($profile in $profiles) {
-        # Set Firefox to the most secure settings
-        Set-ItemProperty -Path "$firefoxProfilePath\$($profile.Name)\prefs.js" -Name "browser.formfill.enable" -Value "false"
-        Set-ItemProperty -Path "$firefoxProfilePath\$($profile.Name)\prefs.js" -Name "browser.sessionstore.privacy_level" -Value "2"
-        Set-ItemProperty -Path "$firefoxProfilePath\$($profile.Name)\prefs.js" -Name "browser.search.suggest.enabled" -Value "false"
-        Set-ItemProperty -Path "$firefoxProfilePath\$($profile.Name)\prefs.js" -Name "browser.urlbar.speculativeConnect.enabled" -Value "false"
-        Set-ItemProperty -Path "$firefoxProfilePath\$($profile.Name)\prefs.js" -Name "dom.event.clipboardevents.enabled" -Value "false"
-        Set-ItemProperty -Path "$firefoxProfilePath\$($profile.Name)\prefs.js" -Name "privacy.firstparty.isolate" -Value "true"
-        Set-ItemProperty -Path "$firefoxProfilePath\$($profile.Name)\prefs.js" -Name "privacy.resistFingerprinting" -Value "true"
-        }
-
-        # Set the Firefox executable path
-        $firefoxExePath = "C:\Program Files\Mozilla Firefox\firefox.exe"
-
-        # Enable Firefox's strict site isolation mode
-        $registryPath = "HKLM:\Software\Policies\Mozilla\Firefox"
-        New-Item -Path $registryPath -Force | Out-Null
-        New-ItemProperty -Path $registryPath -Name IsolateBySite -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Firefox's strict pop-up blocking
-        New-ItemProperty -Path $registryPath -Name PopupBlocking -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Firefox's strict JavaScript blocking
-        # New-ItemProperty -Path $registryPath -Name DisableJS -Value 1 -PropertyType DWORD -Force | Out-Null
-        # This might break the image
-
-        # Enable Firefox's strict certificate revocation checking
-        New-ItemProperty -Path $registryPath -Name CertificateRevocationCheck -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Firefox's strict mixed content blocking
-        New-ItemProperty -Path $registryPath -Name MixedContentBlock -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Firefox's strict referrer policy
-        New-ItemProperty -Path $registryPath -Name Referrers -Value 0 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Firefox's strict cookie blocking
-        New-ItemProperty -Path $registryPath -Name Cookies -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Firefox's strict password protection
-        New-ItemProperty -Path $registryPath -Name PasswordProtection -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Firefox's strict automatic downloads blocking
-        New-ItemProperty -Path $registryPath -Name AutomaticDownloads -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Firefox's strict insecure content blocking
-        New-ItemProperty -Path $registryPath -Name InsecureContent -Value "" -PropertyType String -Force | Out-Null
-
-        # Restart Firefox to apply the new security settings
-        Stop-Process -Name "firefox" -ErrorAction SilentlyContinue
-        Start-Process $firefoxExePath
-
-    }
-    $Selection = Read-Host "Secure Chrome [y/n]:"
-    if($Selection -eq 'y'){
-        # Set the Google Chrome executable path
-        $chromeExePath = "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe"
-
-        # Enable Chrome Safe Browsing and set to "Strict" mode
-        $registryPath = "HKLM:\Software\Policies\Google\Chrome"
-        New-Item -Path $registryPath -Force | Out-Null
-        New-ItemProperty -Path $registryPath -Name SafeBrowsingEnabled -Value 1 -PropertyType DWORD -Force | Out-Null
-        New-ItemProperty -Path $registryPath -Name SafeBrowsingExtendedReportingEnabled -Value 1 -PropertyType DWORD -Force | Out-Null
-        New-ItemProperty -Path $registryPath -Name SafeBrowsingExtendedReportingOptInAllowed -Value 0 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Chrome's strict site isolation mode
-        New-ItemProperty -Path $registryPath -Name SitePerProcess -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Chrome's strict pop-up blocking
-        New-ItemProperty -Path $registryPath -Name PopupBlockingEnabled -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Chrome's strict JavaScript blocking
-        # New-ItemProperty -Path $registryPath -Name JavaScriptBlocked -Value 1 -PropertyType DWORD -Force | Out-Null
-        # JavaScript blocking might break image
-
-        # Enable Chrome's strict certificate revocation checking
-        New-ItemProperty -Path $registryPath -Name CertificateRevocationCheckingEnabled -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Chrome's strict mixed content blocking
-        New-ItemProperty -Path $registryPath -Name MixedContentAutoupgradeEnabled -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Chrome's strict referrer policy
-        New-ItemProperty -Path $registryPath -Name ReferrersEnabled -Value 0 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Chrome's strict cookie blocking
-        New-ItemProperty -Path $registryPath -Name CookiesBlockThirdParty -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Chrome's strict password protection
-        New-ItemProperty -Path $registryPath -Name PasswordProtectionWarningTrigger -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Chrome's strict automatic downloads blocking
-        New-ItemProperty -Path $registryPath -Name AutomaticDownloadsBlocked -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Chrome's strict insecure content blocking
-        New-ItemProperty -Path $registryPath -Name InsecureContentAllowedForUrls -Value "" -PropertyType String -Force | Out-Null
-
-        # Restart Google Chrome to apply the new security settings
-        Stop-Process -Name "chrome" -ErrorAction SilentlyContinue
-        Start-Process $chromeExePath
-    }
-    $Selection = Read-Host "Secure Thunderbird [y/n]:"
-    if($Selection -eq 'y'){
-        # Set the Thunderbird executable path
-        $thunderbirdExePath = "C:\Program Files\Mozilla Thunderbird\thunderbird.exe"
-
-        # Enable Thunderbird's strict certificate revocation checking
-        $registryPath = "HKLM:\Software\Policies\Mozilla\Thunderbird"
-        New-Item -Path $registryPath -Force | Out-Null
-        New-ItemProperty -Path $registryPath -Name CertificateRevocationCheck -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Thunderbird's strict mixed content blocking
-        New-ItemProperty -Path $registryPath -Name MixedContentBlock -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Thunderbird's strict referrer policy
-        New-ItemProperty -Path $registryPath -Name Referrers -Value 0 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Thunderbird's strict cookie blocking
-        New-ItemProperty -Path $registryPath -Name Cookies -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Thunderbird's strict password protection
-        New-ItemProperty -Path $registryPath -Name PasswordProtection -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Thunderbird's strict automatic downloads blocking
-        New-ItemProperty -Path $registryPath -Name AutomaticDownloads -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Thunderbird's strict insecure content blocking
-        New-ItemProperty -Path $registryPath -Name InsecureContent -Value "" -PropertyType String -Force | Out-Null
-
-        # Restart Thunderbird to apply the new security settings
-        Stop-Process -Name "thunderbird" -ErrorAction SilentlyContinue
-        Start-Process $thunderbirdExePath
-    }
-    $Selection = Read-Host "Secure Internet Explorer [y/n]:"
-    if($Selection -eq 'y'){
-        # Set the Internet Explorer executable path
-        $iexploreExePath = "C:\Program Files\Internet Explorer\iexplore.exe"
-
-        # Enable Internet Explorer's strict site isolation mode
-        $registryPath = "HKLM:\Software\Policies\Microsoft\Internet Explorer\Main"
-        New-Item -Path $registryPath -Force | Out-Null
-        New-ItemProperty -Path $registryPath -Name IsolateBySite -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Internet Explorer's strict pop-up blocking
-        New-ItemProperty -Path $registryPath -Name PopupBlocking -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Internet Explorer's strict JavaScript blocking
-        # New-ItemProperty -Path $registryPath -Name DisableJS -Value 1 -PropertyType DWORD -Force | Out-Null
-        # Might break something
-
-        # Enable Internet Explorer's strict certificate revocation checking
-        New-ItemProperty -Path $registryPath -Name CertificateRevocationCheck -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Internet Explorer's strict mixed content blocking
-        New-ItemProperty -Path $registryPath -Name MixedContentBlock -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Internet Explorer's strict referrer policy
-        New-ItemProperty -Path $registryPath -Name Referrers -Value 0 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Internet Explorer's strict cookie blocking
-        New-ItemProperty -Path $registryPath -Name Cookies -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Internet Explorer's strict password protection
-        New-ItemProperty -Path $registryPath -Name PasswordProtection -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Internet Explorer's strict automatic downloads blocking
-        New-ItemProperty -Path $registryPath -Name AutomaticDownloads -Value 1 -PropertyType DWORD -Force | Out-Null
-
-        # Enable Internet Explorer's strict insecure content blocking
-        New-ItemProperty -Path $registryPath -Name InsecureContent -Value "" -PropertyType String -Force | Out-Null
-
-        # Restart Internet Explorer to apply the new security settings
-        Stop-Process -Name "iexplore" -ErrorAction SilentlyContinue
-        Start-Process $iexploreExePath
-    }
-}
-
 function Users {
     $selection = Read-Host "Have you created users.txt and admins.txt [y/n]"
     if ($selection -eq 'y')
     {
-        $authorizedUsersPath = "$($PSScriptRoot)\users\users.txt"
-        $authorizedAdminsPath = "$($PSScriptRoot)\users\admins.txt"
-        # Set the path for the authorized users and admins text files
-
-        # Read the authorized users and admins into arrays
-        $authorizedUsers = Get-Content $authorizedUsersPath
-        $authorizedAdmins = Get-Content $authorizedAdminsPath
-
-        # Get the list of all users on the machine
-        $allUsers = Get-LocalUser
-
-        # Initialize an empty array to hold unauthorized users
-        $unauthorizedUsers = @()
-
-        # Loop through each user in the list of all users
-        foreach ($user in $allUsers) {
-        # If the user is not in the list of authorized users, add them to the unauthorized users array
-        if (!$authorizedUsers.Contains($user.Name)) {
-            $unauthorizedUsers += $user.Name
+        $user_data = Get-Content "$($PSScriptRoot)\users\users.txt"
+        $admin_data = Get-Content "$($PSScriptRoot)\users\admins.txt"
+        $all_users = Get-WMIObject Win32_UserAccount -filter 'LocalAccount=TRUE' | select-object -ExpandProperty Name
+        Write-Output $all_users
+        for($i = 0; $i -lt $user_data.Length; $i++)
+        {
+            $current_user = $user_data[$i]
+            if($all_users -contains $current_user)
+            {
+                Write-Output "User Exists"
+                $UserAccount = Get-LocalUser -Name $current_user
+                $UserAccount | Set-LocalUser -Password 'Sup3rS3cur3P@55w0rd@123'
+            }else
+            {
+                Write-Output "Creating Account for User " + $current_user
+                New-LocalUser $current_user -Password 'Sup3rS3cur3P@55w0rd@123' -FullName $current_user
+            }
+            Remove-LocalGroupMember -Group "Administrators" -Member $current_user
         }
+        for($i = 0; $i -lt $admin_data.Length; $i++)
+        {
+            $current_admin = $admin_data[$i]
+            if($all_users -contains $current_admin)
+            {
+                Write-Output "Admin exists"
+            }else
+            {
+                Write-Output "Creating Account for User " + $current_admin
+                New-LocalUser $current_admin -Password 'Sup3rS3cur3P@55w0rd@123' -FullName $current_admin
+            }
+            Add-LocalGroupMember -Group "Administrators" -Member $current_admin
         }
-
-        # Initialize an empty array to hold non-admin users that should be admins
-        $shouldBeAdmins = @()
-
-        # Loop through each authorized admin
-        foreach ($authorizedAdmin in $authorizedAdmins) {
-        # Get the user object for the current authorized admin
-        $adminUser = Get-LocalUser -Name $authorizedAdmin
-        
-        # If the user is not an admin, add them to the should be admins array
-        if (!$adminUser.IsAdministrator) {
-            $shouldBeAdmins += $authorizedAdmin
+        for($i = 0; $i -lt $all_users.Length; $i++)
+        {
+            $current_user = $all_users[$i]
+            if(-not($user_data -contains $current_user) -and -not($admin_data -contains $current_user) -and -not(@('Administrator','DefaultAccount','Guest','WDAGUtilityAccount') -contains $current_user))
+            {
+                Disable-LocalUser -Name $current_user
+            }
         }
-        }
-
-        # Initialize an empty array to hold admin users that should not be admins
-        $shouldNotBeAdmins = @()
-
-        # Loop through each user in the list of all users
-        foreach ($user in $allUsers) {
-        # If the user is an admin but not in the list of authorized admins, add them to the should not be admins array
-        if ($user.IsAdministrator -and !$authorizedAdmins.Contains($user.Name)) {
-            $shouldNotBeAdmins += $user.Name
-        }
-        }
-
-        # Initialize an empty array to hold authorized users that are not on the machine
-        $missingUsers = @()
-
-        # Loop through each authorized user
-        foreach ($authorizedUser in $authorizedUsers) {
-        # If the authorized user is not in the list of all users, add them to the missing users array
-        if (!$allUsers.Contains($authorizedUser)) {
-            $missingUsers += $authorizedUser
-        }
-        }
-
-        # Write the unauthorized users, should be admins, should not be admins, and missing users to a text file
-        $results = "Unauthorized users:`n" + ($unauthorizedUsers -join "`n") + "`n`nUsers that should be admins:`n" + ($shouldBeAdmins -join "`n") + "`n`nAdmins that should not be admins:`n" + ($shouldNotBeAdmins -join "`n") + "`n`nAuthorized users not on the machine:`n" + ($missingUsers -join "`n")
-
-        Out-File -FilePath "$($PSScriptRoot)\users\unauthorized_users.txt" -InputObject $results
         Disable-LocalUser -Name "Guest"
         Disable-LocalUser -Name "DefaultAccount"
         Disable-LocalUser -Name "Administrator"
         Disable-LocalUser -Name "WDAGUtilityAccount"
-    }
-    # Prompt the user to enter the username of the account to exclude
-    $excludedUser = Read-Host "Enter Your Username: "
-
-    # Set the password to use for all user accounts
-    $password = "Cyb3rP@tr!0t@C15"
-
-    # Get a list of all local user accounts
-    $users = Get-LocalUser
-
-    # Iterate through each user account
-    foreach ($user in $users) {
-        $userName = $user.Name
-
-        # Skip the excluded user
-        if ($userName -eq $excludedUser) {
-            continue
-        }
-
-        # Set the user's password to the specified password
-        Set-LocalUserPassword -UserName $userName -NewPassword $password
     }
     net accounts
     net accounts /minpwlen:10
@@ -298,22 +70,26 @@ function Files {
     Write-host "Searching for unauthorized files..."
     $extensions =@("aac","ac3","avi","aiff","bat","bmp","exe","flac","gif","jpeg","jpg","mov","m3u","m4p",
     "mp2","mp3","mp4","mpeg4","midi","msi","ogg","png","txt","sh","wav","wma","vqf")
-    # Set the directory to search
-    $directory = "C:/Users"
-
-    # Get all .txt and .ps1 files in the directory
-    $files = Get-ChildItem $directory -Include "*.aac","*.ac3","*.avi","*.aiff","*.bat","*.bmp","*.exe","*.flac","*.gif","*.jpeg","*.jpg","*.mov","*.m3u","*.m4p",
-    "*.mp2","*.mp3","*.mp4","*.mpeg4","*.midi","*.msi","*.ogg","*.png","*.txt","*.sh","*.wav","*.wma","*.vqf" -Recurse -Force -ErrorAction Ignore
-
-    # Create an output file
-    $outputFile = "C:/Users/output.txt"
-
-    # Loop through each file and output the file path to the output file
-    foreach ($file in $files) {
-        Add-Content $outputFile $file.FullName
+    $tools =@("Cain","nmap","keylogger","Armitage","Wireshark","Metasploit","netcat")
+    Write-host "Checking $extensions"
+    foreach($ext in $extensions)
+    {
+        Write-host "Checking for .$ext files"
+        if(Test-path "$($PSScriptRoot)\files_output\$ext.txt"){
+            Clear-content "$($PSScriptRoot)\files_output\$ext.txt"
+        }
+        C:\Windows\System32\cmd.exe /C dir C:\*.$ext /s /b | Out-File "$($PSScriptRoot)\files_output\$ext.txt"
     }
-
-    Write-host "Finished searching for files"
+    Write-host "Finished searching by extension"
+    Write-host "Checking for $tools"
+    foreach($tool in $tools){
+        Write-host "Checking for $tool"
+        if(Test-path "$($PSScriptRoot)\files_output\$tool.txt"){
+            Clear-content "$($PSScriptRoot)\files_output\$tool.txt"
+        }
+        C:\Windows\System32\cmd.exe /C dir C:\*$tool* /s /b | Out-File "$($PSScriptRoot)\files_output\$tool.txt"
+    }
+    Write-host "Finished searching for tools"
 }
 
 function Auditing {
@@ -368,33 +144,6 @@ function Enable-Firewall {
 
     netsh advfirewall firewall add rule name="block_RemoteRegistry_in" dir=in service="RemoteRegistry" action=block enable=yes
     netsh advfirewall firewall add rule name="block_RemoteRegistry_out" dir=out service="RemoteRegistry" action=block enable=yes
-
-    # Allow inbound connections for essential Windows services
-    Set-NetFirewallRule -Name "Windows Management Instrumentation (WMI-In)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Remote Management (HTTP-In)" -Action Allow
-    Set-NetFirewallRule -Name "Remote Desktop (TCP-In)" -Action Allow
-    Set-NetFirewallRule -Name "File and Printer Sharing (Echo Request - ICMPv4-In)" -Action Allow
-    Set-NetFirewallRule -Name "Network Discovery (WSD-In)" -Action Allow
-    Set-NetFirewallRule -Name "Network Discovery (SSDP-In)" -Action Allow
-    Set-NetFirewallRule -Name "Network Discovery (LLMNR-UDP-In)" -Action Allow
-    Set-NetFirewallRule -Name "Network Discovery (LLMNR-TCP-In)" -Action Allow
-    Set-NetFirewallRule -Name "Network Discovery (NB-Name-In)" -Action Allow
-
-    # Allow inbound connections for essential system and security updates
-    Set-NetFirewallRule -Name "Windows Update (WU-HTTP-In)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Update (WU-HTTPS-In)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Update (DSC-HTTP-In)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Update (DSC-HTTPS-In)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Update (MU-HTTP-In)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Update (MU-HTTPS-In)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Update (MU-P2P-HTTP-In)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Update (MU-P2P-HTTPS-In)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Defender Antivirus (Domain Name)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Defender Antivirus (IPv4)" -Action Allow
-    Set-NetFirewallRule -Name "Windows Defender Antivirus (IPv6)" -Action Allow
-
-    # Configure the firewall to log all dropped packets
-    Set-NetFirewallProfile -LogAllowed True -LogBlocked True
 
     New-NetFirewallRule -DisplayName "sshTCP" -Direction Inbound -LocalPort 22 -Protocol TCP -Action Block #ssh
     New-NetFirewallRule -DisplayName "ftpTCP" -Direction Inbound -LocalPort 21 -Protocol TCP -Action Block #ftp
@@ -464,68 +213,18 @@ function Remote-Desktop {
     if($choice -eq "y"){
         Write-Output "======================="
         Write-Output "Securing Remote Desktop"
-        # Check if Remote Desktop is already enabled
-        $rdpSetting = Get-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections"
-        if ($rdpSetting.fDenyTSConnections -eq 0)
-        {
-            Write-Output "Remote Desktop is already enabled."
-        }
-        else
-        {
-            # Enable Remote Desktop
-            Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server" -Name "fDenyTSConnections" -Value 0
-            Write-Output "Remote Desktop has been enabled."
-        }
-        # Set Remote Desktop to use Network Level Authentication (NLA)
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "UserAuthentication" -Value 1
-        Write-Output "Remote Desktop has been set to use Network Level Authentication (NLA)."
-
-        # Set Remote Desktop to use a secure connection
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "SecurityLayer" -Value 2
-        Write-Output "Remote Desktop has been set to use a secure connection."
-
-        # Set Remote Desktop to use encrypted network traffic
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "EncryptionLevel" -Value 3
-        Write-Output "Remote Desktop has been set to use encrypted network traffic."
-
-        # Disable Remote Desktop's ability to use remoteFX
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "AllowRDP10RemoteFXCodec" -Value 0
-        Write-Output "Remote Desktop has been disabled from using RemoteFX."
-
-        # Set Remote Desktop to use Remote Desktop Protocol (RDP) 8.1 or later
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "MinEncryptionLevel" -Value 3
-        Write-Output "Remote Desktop has been set to use Remote Desktop Protocol (RDP) 8.1 or later."
-
-        # Set Remote Desktop to require the use of a Secure Sockets Layer (SSL) certificate
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "SSLCertificateSHA1Hash" -Value (Get-ChildItem -Path Cert:\LocalMachine\My | Where-Object {$_.Subject -like "*RD Gateway*"} | Select-Object -First 1 | ForEach-Object {$_.Thumbprint})
-        Write-Output "Remote Desktop has been set to require the use of a Secure Sockets Layer (SSL) certificate."
-
-        # Set Remote Desktop to use strong session key encryption
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "KeyEncryptionKey" -Value 1
-        Write-Output "Remote Desktop has been set to use strong session key encryption."
-
-        # Set Remote Desktop to use NTLMv2 authentication
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa" -Name "LmCompatibilityLevel" -Value 5
-        Write-Output "Remote Desktop has been set to use NTLMv2 authentication."
-
-        # Set Remote Desktop to use strong password protection
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Lsa" -Name "NoLMHash" -Value 1
-        Write-Output "Remote Desktop has been set to use strong password protection."
-
-        # Set Remote Desktop to use the most secure cipher suite by default
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "EncryptionEnabled" -Value 1
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "EncryptionSupported" -Value 1
-        Set-ItemProperty -Path "HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" -Name "RC4EncryptionLevel" -Value 0
-        Write-Output "Remote Desktop has been set to use the most secure cipher suite by default."
-
-
-
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 0 /f
+        reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v UserAuthentication /t REG_DWORD /d 1 /f
+        reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v UserAuthentication /t REG_DWORD /d 1 /f
         Enable-NetFirewallRule -DisplayGroup “Remote Desktop”
-
         reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v fEncryptRPCTraffic /t REG_DWORD /d 1 /f
         reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v fDisableCdm /t REG_DWORD /d 1 /f
         reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v fDisablePNPRedir /t REG_DWORD /d 1 /f
         reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v fDisableAutoReconnect /t REG_DWORD /d 1 /f
+        reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v MinEncryptionLevel /t REG_DWORD /d 3 /f
+        reg add "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Terminal Server" /v SecurityLayer /t REG_DWORD /d 2 /f
+        reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v SecurityLayer /t REG_DWORD /d 2 /f
+        reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v MinEncryptionLevel /t REG_DWORD /d 3 /f
         reg add "HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" /v fPromptForPassword /t REG_DWORD /d 1 /f
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v AllowTSConnections /t REG_DWORD /d 1 /f
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fAllowToGetHelp /t REG_DWORD /d 0 /f
@@ -536,11 +235,6 @@ function Remote-Desktop {
     }else{
         Write-Output "========================"
         Write-Output "Disabling Remote Desktop"
-
-        Stop-Service -Name "TermService"
-        Set-Service -Name "TermService" -StartupType Disabled
-        Disable-NetFirewallRule -DisplayGroup "Remote Desktop"  
-
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v fDenyTSConnections /t REG_DWORD /d 1 /f
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp" /v UserAuthentication /t REG_DWORD /d 0 /f
         reg add "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server" /v AllowTSConnections /t REG_DWORD /d 0 /f
@@ -1306,11 +1000,6 @@ function Group-Policies {
     gpupdate /force
 }
 
-function Registry-Madness {
-    Write-Output "Running Registry Madness"
-    
-}
-
 
 $var = 1
 while($var -le 5){
@@ -1334,7 +1023,7 @@ while($var -le 5){
     Write-Host "11. Find Files                      12. Enable UAC"
     Write-Host "13. Configure Services              14. Firefox Config"
     Write-Host "15. Security Policies               16. Group Policies"
-    Write-Host "17. System Integrity Scan           18. Application Security"
+    Write-Host "17. System Integrity Scan (Takes Time)"
     Write-Host "98. Other                           99. Exit"
     Write-Host "=============================================================="
     $Selection = Read-Host "Choose an Option"
@@ -1390,9 +1079,6 @@ while($var -le 5){
         }
         "17"{
             System-Integrity
-        }
-        "18"{
-            Application-Security
         }
         "98"{
             Other
